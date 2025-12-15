@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CubeMaster - Painel de Aprimoramento</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="./assets/css/styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-cube"></i>
+                <h1>CubeMaster</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="historico.html"><i class="fas fa-history"></i> Histórico</a></li>
+                <li><a href="estatisticas.html"><i class="fas fa-chart-line"></i> Estatísticas</a></li>
+                <li><a href="treinos.html"><i class="fas fa-stopwatch"></i> Treinos</a></li>
+                <li><a href="configuracoes.html"><i class="fas fa-cog"></i> Configurações</a></li>
+                <li><a href="ajuda.html"><i class="fas fa-question-circle"></i> Ajuda</a></li>
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <div class="header" id="dashboard">
+                <h2>Painel de Aprimoramento - Cubo Mágico</h2>
+                <div class="user-info">
+                    <div class="user-avatar">BMS</div>
+                    <div>
+                        <p style="font-weight: bold;">2024SILV15</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-icon pb">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Melhor Tempo (PB)</h3>
+                        <p id="statPbValue">--</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon avg">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Ao5</h3>
+                        <p id="statAo5Value">--</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon avg">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Ao12</h3>
+                        <p id="statAo12Value">--</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon solves">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Resoluções Hoje</h3>
+                        <p id="statSolvesValue">--</p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon consistency">
+                        <i class="fas fa-bullseye"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3>Consistência</h3>
+                        <p id="statConsistencyValue">--</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="charts-container">
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-line"></i> Evolução dos Tempos (Últimos 30 Dias)</h3>
+                    <canvas id="timeEvolutionChart" class="skeleton"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-pie"></i> Distribuição de Tempos</h3>
+                    <canvas id="timeDistributionChart" class="skeleton"></canvas>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                <p>CubeMaster © 2025 - Painel de Aprimoramento para Cubo Mágico</p>
+                <p>Use este painel para acompanhar sua evolução e identificar áreas de melhoria.</p>
+            </div>
+        </main>
+    </div>
+
+    <script src="./assets/js/script.js"></script>
+</body>
+
+</html>

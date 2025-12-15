@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CubeMaster - Histórico</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="./assets/css/styles.css">
+    <link rel="preload" as="script" href="./assets/js/script.js">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-cube"></i>
+                <h1>CubeMaster</h1>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="historico.html"><i class="fas fa-history"></i> Histórico</a></li>
+                <li><a href="estatisticas.html"><i class="fas fa-chart-line"></i> Estatísticas</a></li>
+                <li><a href="treinos.html"><i class="fas fa-stopwatch"></i> Treinos</a></li>
+                <li><a href="configuracoes.html"><i class="fas fa-cog"></i> Configurações</a></li>
+                <li><a href="ajuda.html"><i class="fas fa-question-circle"></i> Ajuda</a></li>
+            </ul>
+        </aside>
+        <main class="main-content">
+            <div class="header">
+                <h2>Histórico de Tempos</h2>
+                <div class="user-info">
+                    <div class="user-avatar">CM</div>
+                    <div>
+                        <p style="font-weight: bold;">Cubista Master</p>
+                        <p style="font-size: 12px; color: #7f8c8d;">Atualizado hoje</p>
+                    </div>
+                </div>
+            </div>
+            <section class="section section--historico">
+                <header class="section__header">
+                    <h3 class="section__title"><i class="fas fa-filter"></i> Filtro de Histórico</h3>
+                    <div class="section__actions">
+                        <label class="section__control">
+                            <span>Método</span>
+                            <select class="section__input" id="filterMethod">
+                                <option value="all">Todos</option>
+                                <option value="CFOP">CFOP</option>
+                                <option value="Roux">Roux</option>
+                                <option value="ZZ">ZZ</option>
+                            </select>
+                        </label>
+                        <label class="section__control">
+                            <span>Intervalo</span>
+                            <select class="section__input" id="filterRange">
+                                <option value="7">7 dias</option>
+                                <option value="30">30 dias</option>
+                                <option value="90">90 dias</option>
+                            </select>
+                        </label>
+                        <button class="btn" id="applyFilters"><i class="fas fa-check"></i> Aplicar</button>
+                    </div>
+                </header>
+                <div class="section__content">
+                    <div class="section__grid">
+                        <article class="section__card">
+                            <h4 class="section__card-title"><i class="fas fa-stopwatch"></i> Média</h4>
+                            <p class="section__card-value" id="historicoAvg">--</p>
+                        </article>
+                        <article class="section__card">
+                            <h4 class="section__card-title"><i class="fas fa-trophy"></i> PB no período</h4>
+                            <p class="section__card-value" id="historicoPb">--</p>
+                        </article>
+                        <article class="section__card">
+                            <h4 class="section__card-title"><i class="fas fa-layer-group"></i> Solves</h4>
+                            <p class="section__card-value" id="historicoSolves">--</p>
+                        </article>
+                    </div>
+                </div>
+            </section>
+            <div class="time-history">
+                <div class="table-header">
+                    <h3><i class="fas fa-history"></i> Histórico de Tempos Recentes</h3>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn" id="addTimeBtn"><i class="fas fa-plus"></i> Adicionar Tempo</button>
+                        <button class="btn" id="importBtn"><i class="fas fa-file-import"></i> Importar Tempos</button>
+                        <button class="btn" id="exportBtn"><i class="fas fa-file-export"></i> Exportar CSV</button>
+                        <input type="file" id="importFile" accept=".txt" style="display:none">
+                    </div>
+                </div>
+                <form class="section__form" id="addTimeForm" style="display:none">
+                    <label class="section__control">
+                        <span>Tempo (s)</span>
+                        <input class="section__input" type="number" step="0.01" min="0" id="formTimeInput" placeholder="ex: 22.35">
+                    </label>
+                    <label class="section__control">
+                        <span>Método</span>
+                        <select class="section__input" id="formMethodInput">
+                            <option value="CFOP">CFOP</option>
+                            <option value="Roux">Roux</option>
+                            <option value="ZZ">ZZ</option>
+                        </select>
+                    </label>
+                    <label class="section__control">
+                        <span>Cubo</span>
+                        <select class="section__input" id="formCubeInput">
+                            <option value="3x3">3x3</option>
+                            <option value="2x2">2x2</option>
+                            <option value="4x4">4x4</option>
+                        </select>
+                    </label>
+                    <label class="section__control">
+                        <input type="checkbox" id="formPlus2">
+                        <span>Penalidade +2</span>
+                    </label>
+                    <label class="section__control">
+                        <input type="checkbox" id="formDnf">
+                        <span>DNF</span>
+                    </label>
+                    <div class="section__actions">
+                        <button type="submit" class="btn"><i class="fas fa-save"></i> Salvar</button>
+                        <button type="button" class="btn" id="formCancelBtn"><i class="fas fa-times"></i> Cancelar</button>
+                    </div>
+                </form>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Tempo</th>
+                            <th>Método</th>
+                            <th>Cubo</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timesTableBody"></tbody>
+                </table>
+            </div>
+            <div class="footer">
+                <p>CubeMaster © 2023 - Histórico</p>
+                <p>Mantenha consistência e acompanhe seus resultados.</p>
+            </div>
+        </main>
+    </div>
+    <script src="./assets/js/script.js"></script>
+</body>
+</html>
