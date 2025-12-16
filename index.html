@@ -32,6 +32,7 @@
         <main class="main-content">
             <!-- Header -->
             <div class="header" id="dashboard">
+                <button class="btn btn--ghost menu-toggle" id="menuToggle" aria-label="Abrir menu"><i class="fas fa-bars"></i></button>
                 <h2>Painel de Aprimoramento - Cubo Mágico</h2>
                 <div class="user-info">
                     <div class="user-avatar">BMS</div>
@@ -90,15 +91,124 @@
                 </div>
             </div>
 
+            <!-- Evolution Analysis -->
+            <div class="section section--evolution">
+                <header class="section__header">
+                    <h3 class="section__title"><i class="fas fa-chart-line"></i> Análise Evolutiva</h3>
+                    <div class="evolution-trend" id="evolutionTrend"></div>
+                </header>
+                <div class="section__content">
+                    <div class="section__grid">
+                        <article class="section__card">
+                            <h4 class="section__card-title">Últimos 7 dias</h4>
+                            <p class="section__card-value" id="evo7Days">--</p>
+                            <p class="section__card-text" id="evo7DaysComp">--</p>
+                        </article>
+                        <article class="section__card">
+                            <h4 class="section__card-title">Últimos 30 dias</h4>
+                            <p class="section__card-value" id="evo30Days">--</p>
+                            <p class="section__card-text" id="evo30DaysComp">--</p>
+                        </article>
+                        <article class="section__card">
+                            <h4 class="section__card-title">Geral</h4>
+                            <p class="section__card-value" id="evoAll">--</p>
+                            <p class="section__card-text" id="evoAllComp">--</p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Metrics & Goals Grid -->
+            <div class="advanced-grid">
+                <!-- Advanced Metrics -->
+                <div class="section section--metrics">
+                    <header class="section__header">
+                        <h3 class="section__title"><i class="fas fa-microchip"></i> Métricas Avançadas</h3>
+                    </header>
+                    <div class="metrics-container">
+                        <div class="metric-item">
+                            <div class="metric-label">Nível Estimado</div>
+                            <div class="metric-value" id="metricLevel">Calculando...</div>
+                            <div class="metric-sub" id="metricLevelDesc">Baseado no Ao100</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Chance de PB (Sessão)</div>
+                            <div class="metric-value" id="metricPbProb">--%</div>
+                            <div class="metric-sub">Probabilidade estatística</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Melhor Horário</div>
+                            <div class="metric-value" id="metricBestTime">--</div>
+                            <div class="metric-sub">Pico de performance</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Goals Widget -->
+                <div class="section section--goals">
+                    <header class="section__header">
+                        <h3 class="section__title"><i class="fas fa-bullseye"></i> Metas Semanais</h3>
+                        <button class="btn btn--sm btn--ghost" id="refreshGoals"><i class="fas fa-sync"></i></button>
+                    </header>
+                    <div class="goals-list">
+                        <div class="goal-item">
+                            <div class="goal-header">
+                                <span>Volume Semanal (100 solves)</span>
+                                <span id="goalVolumeText">0/100</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="goalVolumeBar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="goal-item">
+                            <div class="goal-header">
+                                <span>Sub-20s (10 solves)</span>
+                                <span id="goalSub20Text">0/10</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="goalSub20Bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Charts -->
             <div class="charts-container">
                 <div class="chart-card">
-                    <h3><i class="fas fa-chart-line"></i> Evolução dos Tempos (Últimos 30 Dias)</h3>
-                    <canvas id="timeEvolutionChart" class="skeleton"></canvas>
+                    <div class="chart-header-controls">
+                        <h3><i class="fas fa-chart-bar"></i> Distribuição de Tempos</h3>
+                        <div class="target-control">
+                            <label>Meta:</label>
+                            <input type="number" id="targetTimeInput" value="20" step="0.5" class="small-input">
+                            <span>s</span>
+                        </div>
+                    </div>
+                    <canvas id="timeDistributionChart" class="skeleton"></canvas>
+                    <div id="distributionDetails" class="distribution-details" style="display:none;">
+                        <h4>Solves na faixa <span id="distRangeLabel"></span>:</h4>
+                        <div class="mini-table-container">
+                            <table class="mini-table">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Tempo</th>
+                                        <th>Método</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="distTableBody"></tbody>
+                            </table>
+                        </div>
+                        <button class="btn btn--sm btn--ghost" id="closeDistDetails">Fechar</button>
+                    </div>
                 </div>
                 <div class="chart-card">
-                    <h3><i class="fas fa-chart-pie"></i> Distribuição de Tempos</h3>
-                    <canvas id="timeDistributionChart" class="skeleton"></canvas>
+                    <h3><i class="fas fa-clock"></i> Desempenho por Horário</h3>
+                    <canvas id="timeOfDayChart" class="skeleton"></canvas>
+                </div>
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-line"></i> Evolução dos Tempos (Últimos 30 Dias)</h3>
+                    <canvas id="timeEvolutionChart" class="skeleton"></canvas>
                 </div>
             </div>
 
