@@ -429,3 +429,4 @@ Encontrou um bug ou tem uma sugestão?
 Feito com ❤️ e muito cubo mágico 🎲
 
 </div>
+
