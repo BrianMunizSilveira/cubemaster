@@ -344,6 +344,11 @@ body {
     color: var(--primary-color);
 }
 
+.table-actions {
+    display: flex;
+    gap: var(--space-sm);
+}
+
 .btn {
     background-color: var(--primary-color);
     color: var(--color-white);
@@ -1108,6 +1113,33 @@ body.compact-cards .section__card {
 
     .section__grid {
         grid-template-columns: 1fr;
+    }
+
+    .table-header {
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+
+    .table-actions {
+        flex-direction: column-reverse;
+    }
+
+    .charts-container {
+        grid-template-columns: 1fr;
+    }
+
+    .table-mini {
+        font-size: var(--font-size-sm);
+
+    }
+
+    .table-footer {
+        display: flex;
+        justify-content: space-between;
+        flex-direction: column;
+        gap: var(--space-15);
+        align-items: center;
+        margin-top: 12px;
     }
 }
 
