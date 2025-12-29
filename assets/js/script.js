@@ -24,32 +24,174 @@ document.addEventListener('DOMContentLoaded', function () {
         if (s.penalty === 'dnf') return NaN;
         return s.penalty === 'plus2' ? s.time + 2 : s.time;
     }
-    function parseCsTimerExport(text) {
-        const lines = text.split(/\r?\n/);
-        let exportDate = null;
-        const mDate = text.match(/Gerado .* em (\d{4}-\d{2}-\d{2})/);
-        if (mDate) exportDate = mDate[1];
-        const mSolves = text.match(/solves\/total:\s*(\d+)\//i);
-        const solves = mSolves ? parseInt(mSolves[1], 10) : 0;
-        const idx = lines.findIndex(l => /Lista de Tempos:/i.test(l));
-        const times = [];
-        for (let i = idx + 1; i < lines.length; i++) {
-            const line = lines[i].trim();
-            if (!line) continue;
-            const m = line.match(/^\d+\.\s+(DNF\(([0-9.]+)\)|([0-9.]+))/i);
-            if (!m) continue;
-            const isDnf = !!m[2];
-            const val = m[3] ? parseFloat(m[3]) : (m[2] ? parseFloat(m[2]) : NaN);
-            if (!isNaN(val)) {
-                times.push({
-                    time: val,
-                    penalty: isDnf ? 'dnf' : 'none',
-                    method: 'CFOP',
-                    cube: '3x3'
-                });
+    function parseTimeStr(str) {
+        if (!str) return NaN;
+        let val = parseFloat(str);
+        if (str.includes(':')) {
+            const parts = str.split(':');
+            if (parts.length === 2) {
+                val = parseFloat(parts[0]) * 60 + parseFloat(parts[1]);
             }
         }
-        return { times, exportDate, solves: solves || times.length };
+        return val;
+    }
+
+    function parseCsTimerExport(text) {
+        let times = [];
+        let exportDate = null;
+        const lines = text.split(/\r?\n/);
+
+        // 1. Tentar parsing JSON (Formato CsTimer backup/sessão ou CubeMaster backup)
+        try {
+            const json = JSON.parse(text);
+            let sessionData = [];
+
+            if (Array.isArray(json)) {
+                sessionData = json;
+            } else if (typeof json === 'object' && json !== null) {
+                // Tentar extrair sessões do objeto (properties, session1, session2...)
+                Object.keys(json).forEach(key => {
+                    if ((key.startsWith('session') || key === 'times') && Array.isArray(json[key])) {
+                        sessionData = sessionData.concat(json[key]);
+                    }
+                });
+            }
+
+            if (sessionData.length > 0) {
+                sessionData.forEach(s => {
+                    // Formato CsTimer Array: [penalty, time(ms), scramble, timestamp]
+                    // penalty: 0=OK, 2000=+2, -1=DNF
+                    if (Array.isArray(s) && s.length >= 2 && typeof s[1] === 'number') {
+                        const penaltyVal = s[0];
+                        const timeMs = s[1];
+                        const ts = s[3];
+
+                        let penalty = 'none';
+                        if (penaltyVal === -1) penalty = 'dnf';
+                        else if (penaltyVal === 2000) penalty = 'plus2';
+
+                        times.push({
+                            time: timeMs / 1000,
+                            penalty: penalty,
+                            method: 'CFOP',
+                            cube: '3x3',
+                            date: ts ? new Date(ts * 1000).toISOString() : null
+                        });
+                    }
+                    // Formato Objeto (CubeMaster ou outro)
+                    else if (typeof s === 'object' && s.time) {
+                        times.push(s);
+                    }
+                });
+
+                if (times.length > 0) {
+                    return { times, exportDate: new Date().toISOString(), solves: times.length };
+                }
+            }
+        } catch (e) {
+            // Não é JSON válido, prosseguir para parsing de texto
+        }
+
+        // 2. Parsing de CSV (Ex: Formato exportado com colunas separadas por ;)
+        // Detectar cabeçalho típico: No.;Time;Comment...
+        const csvHeaderRegex = /^(?:No\.|Solves?)[;,](?:Time|Tempo)[;,].*/i;
+        if (csvHeaderRegex.test(lines[0]) || csvHeaderRegex.test(lines[1] || '')) {
+            const separator = lines[0].includes(';') ? ';' : ',';
+            const headerLineIdx = lines.findIndex(l => csvHeaderRegex.test(l));
+            const header = lines[headerLineIdx].toLowerCase().split(separator).map(c => c.trim());
+
+            const timeIdx = header.findIndex(h => h === 'time' || h === 'tempo');
+            const dateIdx = header.findIndex(h => h === 'date' || h === 'data');
+            // Opcional: Scramble, Comment, P.1 (Penalty?)
+
+            if (timeIdx !== -1) {
+                for (let i = headerLineIdx + 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    const cols = line.split(separator).map(c => c.trim());
+
+                    if (cols.length > timeIdx) {
+                        const timeRaw = cols[timeIdx];
+                        const dateRaw = dateIdx !== -1 ? cols[dateIdx] : null;
+
+                        // Tratamento de Tempo e Penalidade
+                        // Ex: "22.95", "DNF", "22.95+", "DNF(22.95)"
+                        let timeVal = NaN;
+                        let penalty = 'none';
+
+                        if (/^DNF/i.test(timeRaw)) {
+                            penalty = 'dnf';
+                            // Tentar extrair tempo se existir: DNF(22.95)
+                            const mDnf = timeRaw.match(/\(([\d.:]+)\)/);
+                            if (mDnf) timeVal = parseTimeStr(mDnf[1]);
+                        } else if (/\+$/.test(timeRaw) || /^2000/.test(cols[cols.length - 1])) { // Check basic + or P.1 column logic if needed
+                            // Suporte simples para "+" no final
+                            penalty = 'plus2';
+                            timeVal = parseTimeStr(timeRaw.replace('+', ''));
+                        } else {
+                            timeVal = parseTimeStr(timeRaw);
+                        }
+
+                        if (!isNaN(timeVal)) {
+                            times.push({
+                                time: timeVal,
+                                penalty: penalty,
+                                method: 'CFOP',
+                                cube: '3x3',
+                                date: dateRaw ? new Date(dateRaw).toISOString() : (exportDate || null)
+                            });
+                        }
+                    }
+                }
+                if (times.length > 0) return { times, exportDate, solves: times.length };
+            }
+        }
+
+        // 3. Parsing de Texto (CsTimer TXT Export e variações)
+        
+        // Tentar extrair data do cabeçalho
+        const mDate = text.match(/(?:Gerado|Generated).*?(?:em|on)\s+(\d{4}-\d{2}-\d{2})/i);
+        if (mDate) exportDate = mDate[1];
+
+        // Regex flexível para linhas de solve
+        // Suporta: "1. 15.00", "1. 15.00+", "1. DNF(15.00)", "100. 1:05.00"
+        const solveRegex = /^\s*\d+\.\s+(?:(DNF)\s*\(?([0-9.:]+)\)?|([0-9.:]+)(\+?))/i;
+
+        // Identificar início da lista (opcional, se não achar varre tudo)
+        const headerIdx = lines.findIndex(l => /(?:Lista de Tempos|Time List|Liste de temps|List)\s*:/i.test(l));
+        const startIdx = headerIdx !== -1 ? headerIdx + 1 : 0;
+
+        for (let i = startIdx; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+
+            const m = line.match(solveRegex);
+            if (m) {
+                // m[1]: "DNF"
+                // m[2]: Tempo dentro do DNF
+                // m[3]: Tempo normal
+                // m[4]: "+" (plus2)
+                const isDnf = !!m[1];
+                const timeStr = m[2] || m[3];
+                const isPlus2 = m[4] === '+';
+
+                if (timeStr) {
+                    let val = parseTimeStr(timeStr);
+
+                    if (!isNaN(val)) {
+                        times.push({
+                            time: val,
+                            penalty: isDnf ? 'dnf' : (isPlus2 ? 'plus2' : 'none'),
+                            method: 'CFOP',
+                            cube: '3x3',
+                            date: exportDate // Será preenchido por simulateDates se null
+                        });
+                    }
+                }
+            }
+        }
+
+        return { times, exportDate, solves: times.length };
     }
     function computeDistribution(solves) {
         const d = { sub15: 0, r15_18: 0, r18_21: 0, r21_24: 0, over24: 0 };
@@ -930,6 +1072,58 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
     }
+    function setupDataManagement() {
+        const btnUseLocalEmpty = document.getElementById('btnUseLocalEmpty');
+        const btnWipeAll = document.getElementById('btnWipeAll');
+
+        if (btnUseLocalEmpty) {
+            btnUseLocalEmpty.addEventListener('click', function () {
+                if (!confirm('Isso irá remover todos os tempos atuais e iniciar uma lista vazia APENAS no navegador. Deseja continuar?')) return;
+                appData.times = [];
+                appData.solves = 0;
+                appData.exportDate = null;
+                localStorage.setItem(timesStorageKey, JSON.stringify(appData.times));
+                showToast('Banco de dados local reiniciado e limpo.');
+                // Recarrega para garantir estado limpo e atualizar gráficos
+                setTimeout(() => window.location.reload(), 1000);
+            });
+        }
+
+        if (btnWipeAll) {
+            btnWipeAll.addEventListener('click', function () {
+                if (!confirm('Isso apagará TODO o histórico local. Se não houver arquivo TXT, dados de exemplo podem ser carregados na próxima visita. Continuar?')) return;
+                localStorage.removeItem(timesStorageKey);
+                showToast('Dados locais apagados.');
+                setTimeout(() => window.location.reload(), 1000);
+            });
+        }
+    }
+    function setupDataManagement() {
+        const btnUseLocalEmpty = document.getElementById('btnUseLocalEmpty');
+        const btnWipeAll = document.getElementById('btnWipeAll');
+
+        if (btnUseLocalEmpty) {
+            btnUseLocalEmpty.addEventListener('click', function () {
+                if (!confirm('Isso irá remover todos os tempos atuais e iniciar uma lista vazia APENAS no navegador. Deseja continuar?')) return;
+                appData.times = [];
+                appData.solves = 0;
+                appData.exportDate = null;
+                localStorage.setItem(timesStorageKey, JSON.stringify(appData.times));
+                showToast('Banco de dados local reiniciado e limpo.');
+                // Recarrega para garantir estado limpo
+                setTimeout(() => window.location.reload(), 1000);
+            });
+        }
+
+        if (btnWipeAll) {
+            btnWipeAll.addEventListener('click', function () {
+                if (!confirm('Isso apagará TODO o histórico local. Se não houver arquivo TXT, dados de exemplo serão carregados na próxima visita. Continuar?')) return;
+                localStorage.removeItem(timesStorageKey);
+                showToast('Dados locais apagados.');
+                setTimeout(() => window.location.reload(), 1000);
+            });
+        }
+    }
     function setupImport() {
         const importBtn = document.getElementById('importBtn');
         const importFile = document.getElementById('importFile');
@@ -958,7 +1152,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 initTimeEvolutionChart();
                 initTimeDistributionChart();
                 renderDashboardCards();
-                showToast('Tempos importados');
+                showToast('Importação do CsTimer concluída');
             });
         }
         if (resetBtn) {
@@ -985,7 +1179,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     }
                 } else {
                     appData = { times: [], exportDate: null, solves: 0 };
-                    showToast('Tempos resetados');
+                    // Salvar vazio para evitar carregar fallback/txt no reload
+                    localStorage.setItem(timesStorageKey, JSON.stringify([]));
+                    showToast('Tempos resetados (Modo Local)');
                 }
                 renderTimesTable();
                 updateHistoricoSummary();
@@ -1067,6 +1263,7 @@ document.addEventListener('DOMContentLoaded', function () {
         observeCharts();
         setupNav();
         setupPreferences();
+        setupDataManagement();
         setupImport();
         renderTimesTable();
         updateHistoricoSummary();
