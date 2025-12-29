@@ -1,7 +1,7 @@
 # CubeMaster v2.0 🎲
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.0.0-green.svg)](https://github.com/yourusername/cubemaster)
+[![Version](https://img.shields.io/badge/version-2.1.0-green.svg)](https://github.com/BrianMunizSilveira/cubemaster)
 [![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
 [![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
 [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
@@ -16,7 +16,6 @@
 
 - [Sobre](#-sobre)
 - [Funcionalidades](#-funcionalidades)
-- [Novidades v2.0](#-novidades-v20)
 - [Instalação](#-instalação)
 - [Uso](#-uso)
 - [Estrutura do Projeto](#-estrutura-do-projeto)
@@ -73,37 +72,6 @@
 - **Cartões Compactos**: Otimize espaço vertical
 - **Animações**: Controle transições em gráficos
 - **Modo Escuro**: Ativação automática baseada no sistema
-
----
-
-## 🆕 Novidades v2.0
-
-### 🎨 Sistema de Design Renovado
-```css
-/* Design Tokens implementados */
---color-primary, --color-success, --color-warning, --color-danger
---font-size-xs até --font-size-3xl
---space-1 até --space-8
---radius-sm, --radius-md, --radius-lg, --radius-xl
-```
-
-### 🚀 Performance e Escalabilidade
-- ✅ Paginação real com renderização parcial
-- ✅ Suporte a datasets com 10K+ solves
-- ✅ Lazy loading de gráficos com IntersectionObserver
-- ✅ Otimização de memória em dispositivos móveis
-
-### 🗓️ Tratamento de Datas
-- ✅ Armazenamento ISO 8601 internamente
-- ✅ Formatação `pt-BR` na interface
-- ✅ Simulação inteligente de datas em importações
-- ✅ Ordenação cronológica confiável
-
-### 📱 Mobile First
-- ✅ Menu off-canvas com overlay
-- ✅ Touch targets de 48x48px (AAA)
-- ✅ Feedback háptico (vibração)
-- ✅ Gestos naturais
 
 ---
 
