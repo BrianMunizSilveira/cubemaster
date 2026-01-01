@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,13 +8,70 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="./assets/css/styles.css">
     <style>
+        /* Sidebar Hidden State */
+        body.sidebar-hidden .container {
+            grid-template-columns: 0 1fr;
+        }
+
+        body.sidebar-hidden .sidebar {
+            width: 0;
+            padding: 0;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        body.sidebar-hidden .main-content {
+            width: 100%;
+            margin-left: 0;
+        }
+
+        /* Smooth Sidebar Transition */
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+
+        /* Sidebar Toggle Button */
+        #sidebarToggle {
+            transition: all 0.3s;
+            min-width: 48px;
+        }
+
+        #sidebarToggle:hover {
+            background-color: var(--mini-table-header-bg);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Timer Section Optimized */
         .timer-section {
             display: flex;
             flex-direction: column;
             align-items: center;
             width: 100%;
-            max-width: 900px;
+            max-width: 100%;
             margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        /* Full Width Mode for Timer */
+        body.sidebar-hidden .timer-section {
+            max-width: 100%;
+        }
+
+        body.sidebar-hidden .scramble-display {
+            font-size: 1.8rem;
+            padding: 2rem;
+        }
+
+        body.sidebar-hidden .timer-display {
+            font-size: 12rem;
+            margin: 3rem 0;
         }
 
         .scramble-display {
@@ -29,6 +85,7 @@
             width: 100%;
             font-family: 'Courier New', Courier, monospace;
             color: var(--secondary-color);
+            transition: all 0.3s ease;
         }
 
         .timer-display {
@@ -39,7 +96,7 @@
             margin: 1rem 0;
             cursor: pointer;
             user-select: none;
-            transition: color 0.1s;
+            transition: all 0.3s ease;
             line-height: 1;
         }
 
@@ -61,9 +118,11 @@
         }
 
         .timer-settings {
-            margin-bottom: 1rem;
+            margin-bottom: 2rem;
             display: flex;
-            gap: 1rem;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         /* Toggle Switch */
@@ -83,20 +142,20 @@
 
         .toggle-switch .slider {
             position: relative;
-            width: 40px;
-            height: 20px;
+            width: 44px;
+            height: 24px;
             background-color: var(--color-border);
-            border-radius: 20px;
+            border-radius: 24px;
             transition: .4s;
         }
 
         .toggle-switch .slider:before {
             position: absolute;
             content: "";
-            height: 16px;
-            width: 16px;
-            left: 2px;
-            bottom: 2px;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
             background-color: white;
             border-radius: 50%;
             transition: .4s;
@@ -111,75 +170,264 @@
         }
         
         .toggle-switch .label-text {
-            font-size: 0.9rem;
-            color: var(--color-muted);
+            font-size: 0.95rem;
+            color: var(--secondary-color);
             font-weight: 500;
         }
 
+        /* Session Info Grid - csTimer style */
         .session-info {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 2rem;
-            width: 100%;
+            position: fixed;
+            right: 0;
+            top: 0;
+            height: 100vh;
+            width: 320px;
+            background-color: var(--color-surface);
+            border-left: 1px solid var(--color-border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            z-index: 50;
+            box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+        }
+
+        body.sidebar-hidden .session-info {
+            width: 380px;
+        }
+
+        /* Main content adjusts for right panel */
+        .main-content {
+            margin-right: 320px;
+        }
+
+        body.sidebar-hidden .main-content {
+            margin-right: 380px;
         }
 
         .session-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid var(--color-border);
         }
 
         .stat-box {
-            background-color: var(--color-surface);
-            padding: 1rem;
-            border-radius: var(--radius-md);
-            box-shadow: var(--box-shadow);
-            text-align: center;
-            border: 1px solid var(--color-border-soft);
+            background-color: transparent;
+            padding: 0.75rem 0.5rem;
+            border-radius: 0;
+            box-shadow: none;
+            text-align: left;
+            border: none;
+            border-bottom: 1px solid var(--color-border-soft);
+            transition: background-color 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-box:last-child {
+            border-bottom: none;
+        }
+
+        .stat-box:hover {
+            transform: none;
+            box-shadow: none;
+            background-color: var(--table-hover-bg);
         }
 
         .stat-box h4 {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--color-muted);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0;
+            text-transform: none;
+            letter-spacing: 0;
+            font-weight: 500;
         }
 
         .stat-box .value {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             font-weight: 700;
-            color: var(--secondary-color);
+            color: var(--primary-color);
+            font-family: 'Roboto Mono', monospace;
         }
 
         .solves-list {
-            background-color: var(--color-surface);
-            border-radius: var(--radius-md);
-            box-shadow: var(--box-shadow);
-            overflow: hidden;
-            max-height: 400px;
+            flex: 1;
+            background-color: transparent;
+            border-radius: 0;
+            box-shadow: none;
             overflow-y: auto;
+            border: none;
+            width: 100%;
+            position: relative;
+        }
+
+        body.sidebar-hidden .solves-list {
+            width: 100%;
+        }
+
+        .solves-list-header {
+            padding: 1rem;
+            background-color: var(--mini-table-header-bg);
+            border-bottom: 1px solid var(--color-border);
+            font-weight: 600;
+            color: var(--secondary-color);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            font-size: 0.9rem;
         }
 
         .solve-item {
             display: flex;
-            flex-direction: column;
-            padding: 0.8rem 1rem;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 1rem;
             border-bottom: 1px solid var(--color-border-soft);
-            font-size: 0.95rem;
+            font-size: 0.85rem;
+            transition: background-color 0.2s;
+            gap: 0.5rem;
+        }
+
+        .solve-item:hover {
+            background-color: var(--table-hover-bg);
         }
 
         .solve-item:last-child {
             border-bottom: none;
         }
 
-        .solve-item .count { color: var(--color-muted); width: 30px; }
-        .solve-item .time { font-weight: 600; flex: 1; }
-        .solve-item .actions { opacity: 0.5; transition: opacity 0.2s; cursor: pointer; }
-        .solve-item:hover .actions { opacity: 1; }
+        .solve-item-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .solve-item .count { 
+            color: var(--color-muted); 
+            min-width: 45px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .solve-item .time { 
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--secondary-color);
+            flex: 1;
+            text-align: right;
+            font-family: 'Roboto Mono', monospace;
+        }
+        
+        .solve-item .actions { 
+            opacity: 0.5; 
+            transition: opacity 0.2s; 
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+        }
+        
+        .solve-item .actions:hover { 
+            opacity: 1;
+            background-color: var(--danger-bg-weak);
+            color: var(--danger-color);
+        }
+
+        .solve-item.penalty-plus2 {
+            background-color: var(--warning-bg-weak);
+        }
+
+        .solve-item.penalty-dnf {
+            background-color: var(--danger-bg-weak);
+        }
+
+        /* Keyboard Shortcut Hint */
+        .keyboard-hint {
+            text-align: center;
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: var(--mini-table-header-bg);
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            color: var(--color-muted);
+        }
+
+        .keyboard-hint kbd {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            background-color: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            font-family: monospace;
+            font-weight: 600;
+            margin: 0 0.2rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .session-info {
+                width: 280px;
+            }
+            
+            body.sidebar-hidden .session-info {
+                width: 320px;
+            }
+            
+            .main-content {
+                margin-right: 280px;
+            }
+            
+            body.sidebar-hidden .main-content {
+                margin-right: 320px;
+            }
+        }
 
         @media (max-width: 768px) {
             .timer-display { font-size: 5rem; }
-            .session-info { grid-template-columns: 1fr; }
+            body.sidebar-hidden .timer-display { font-size: 7rem; }
+            
+            .session-info {
+                position: fixed;
+                width: 100%;
+                height: auto;
+                max-height: 40vh;
+                top: auto;
+                bottom: 0;
+                right: 0;
+                left: 0;
+                border-left: none;
+                border-top: 1px solid var(--color-border);
+                z-index: 100;
+            }
+            
+            body.sidebar-hidden .session-info {
+                width: 100%;
+            }
+            
+            .main-content {
+                margin-right: 0;
+                margin-bottom: 40vh;
+            }
+            
+            body.sidebar-hidden .main-content {
+                margin-right: 0;
+            }
+            
+            .scramble-display { font-size: 1.1rem; padding: 1rem; }
+            #sidebarToggle { display: none !important; }
+            
+            .stat-box {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 0.5rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .timer-display { font-size: 4rem; }
+            body.sidebar-hidden .timer-display { font-size: 5rem; }
+            .stat-box .value { font-size: 1.2rem; }
         }
     </style>
 </head>
@@ -202,9 +450,15 @@
         </aside>
         <main class="main-content">
             <div class="header">
-                <button class="btn btn--ghost menu-toggle" id="menuToggle" aria-label="Abrir menu"><i
-                        class="fas fa-bars"></i></button>
-                <h2>Cronômetro</h2>
+                <div class="header-left">
+                    <button class="btn btn--ghost menu-toggle" id="menuToggle" aria-label="Abrir menu">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <button class="btn btn--ghost" id="sidebarToggle" aria-label="Ocultar menu lateral" title="Ocultar menu lateral (Ctrl+H)">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <h2>Cronômetro</h2>
+                </div>
                 <div class="user-info">
                     <div class="user-avatar">CM</div>
                     <div>
@@ -218,61 +472,116 @@
                 
                 <div id="timerDisplay" class="timer-display">0.00</div>
                 
-                <div class="timer-controls">
-                    <button class="btn btn--ghost" id="btnGenScramble" title="Novo Scramble (Alt+S)"><i class="fas fa-random"></i> Scramble</button>
-                    <button class="btn btn--danger" id="btnDeleteLast" title="Excluir Último (Alt+Z)"><i class="fas fa-trash"></i> Excluir</button>
-                    <button class="btn btn--ghost" id="btnResetSession" title="Resetar Sessão"><i class="fas fa-eraser"></i> Limpar Sessão</button>
-                </div>
-
                 <div class="timer-settings">
                     <label class="toggle-switch">
                         <input type="checkbox" id="toggleInspection">
                         <span class="slider"></span>
-                        <span class="label-text">Inspeção (15s)</span>
+                        <span class="label-text">Inspeção WCA (15s)</span>
                     </label>
                 </div>
                 
+                <div class="timer-controls">
+                    <button class="btn btn--ghost" id="btnGenScramble" title="Novo Scramble">
+                        <i class="fas fa-random"></i> Novo Scramble
+                    </button>
+                    <button class="btn btn--danger" id="btnDeleteLast" title="Excluir Último Tempo">
+                        <i class="fas fa-trash"></i> Excluir Último
+                    </button>
+                    <button class="btn btn--ghost" id="btnResetSession" title="Limpar Todos os Tempos da Sessão">
+                        <i class="fas fa-eraser"></i> Limpar Sessão
+                    </button>
+                </div>
+
+                <div class="keyboard-hint">
+                    <strong>Atalhos:</strong> 
+                    <kbd>Espaço</kbd> Iniciar/Parar • 
+                    <kbd>Ctrl</kbd>+<kbd>H</kbd> Ocultar Menu • 
+                    <kbd>Esc</kbd> Novo Scramble
+                </div>
+                
                 <div class="session-info">
-                    <div class="session-left">
-                        <div class="session-stats-grid">
-                            <div class="stat-box">
-                                <h4>Solves</h4>
-                                <div class="value" id="sessionCount">0</div>
-                            </div>
-                            <div class="stat-box">
-                                <h4>Média</h4>
-                                <div class="value" id="sessionMean">--</div>
-                            </div>
-                            <div class="stat-box">
-                                <h4>Ao5</h4>
-                                <div class="value" id="sessionAo5">--</div>
-                            </div>
-                            <div class="stat-box">
-                                <h4>Ao12</h4>
-                                <div class="value" id="sessionAo12">--</div>
-                            </div>
-                            <div class="stat-box">
-                                <h4>Melhor</h4>
-                                <div class="value" id="sessionBest">--</div>
-                            </div>
+                    <div class="session-stats-grid">
+                        <div class="stat-box">
+                            <h4><i class="fas fa-layer-group"></i> Solves</h4>
+                            <div class="value" id="sessionCount">0</div>
+                        </div>
+                        <div class="stat-box">
+                            <h4><i class="fas fa-chart-line"></i> Média</h4>
+                            <div class="value" id="sessionMean">--</div>
+                        </div>
+                        <div class="stat-box">
+                            <h4><i class="fas fa-star"></i> Ao5</h4>
+                            <div class="value" id="sessionAo5">--</div>
+                        </div>
+                        <div class="stat-box">
+                            <h4><i class="fas fa-star-half-alt"></i> Ao12</h4>
+                            <div class="value" id="sessionAo12">--</div>
+                        </div>
+                        <div class="stat-box">
+                            <h4><i class="fas fa-trophy"></i> Melhor</h4>
+                            <div class="value" id="sessionBest">--</div>
                         </div>
                     </div>
                     
-                    <div class="session-right">
-                        <div class="solves-list" id="solvesList">
-                            <!-- Lista de solves será injetada aqui -->
-                            <div style="padding: 1rem; text-align: center; color: var(--color-muted);">Nenhum tempo nesta sessão</div>
+                    <div class="solves-list">
+                        <div class="solves-list-header">
+                            <i class="fas fa-history"></i> Tempos Recentes
+                        </div>
+                        <div id="solvesList">
+                            <div style="padding: 2rem 1rem; text-align: center; color: var(--color-muted);">
+                                <i class="fas fa-stopwatch" style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5;"></i>
+                                <p>Nenhum tempo registrado</p>
+                                <p style="font-size: 0.85rem; margin-top: 0.5rem;">Pressione <kbd>Espaço</kbd> para começar</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+            
             <div class="footer">
-                <p>CubeMaster © 2023 - Treinos</p>
-                <p>Estruture suas sessões para progressão constante.</p>
+                <p>CubeMaster © 2025 - Cronômetro de Treino</p>
+                <p>Mantenha o foco e a consistência em suas sessões</p>
             </div>
         </main>
     </div>
+    
+    <script>
+        // Sidebar Hide Functionality (Resets on page reload)
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const body = document.body;
+            
+            // Sidebar is always visible on page load (no localStorage check)
+            // Menu sempre visível ao carregar a página
+            
+            // Hide sidebar temporarily (only for current session)
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function() {
+                    body.classList.add('sidebar-hidden');
+                    this.style.display = 'none';
+                    // Não salva no localStorage - reseta ao recarregar
+                });
+            }
+            
+            // Keyboard shortcut: Ctrl+H to hide sidebar
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'h') {
+                    e.preventDefault();
+                    if (!body.classList.contains('sidebar-hidden')) {
+                        sidebarToggle?.click();
+                    }
+                }
+                
+                // Esc to generate new scramble (only when timer is at 0.00)
+                if (e.key === 'Escape') {
+                    const timerDisplay = document.getElementById('timerDisplay');
+                    if (timerDisplay && timerDisplay.textContent === '0.00') {
+                        document.getElementById('btnGenScramble')?.click();
+                    }
+                }
+            });
+        });
+    </script>
     <script src="./assets/js/script.js"></script>
 </body>
-
 </html>

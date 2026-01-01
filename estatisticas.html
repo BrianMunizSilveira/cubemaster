@@ -3,12 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CubeMaster - Estatísticas</title>
+    <title>CubeMaster - Estatísticas Avançadas</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="./assets/css/styles.css">
-    <link rel="preload" as="script" href="./assets/js/script.js">
-    </head>
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .records-table {
+            width: 100%;
+            margin-top: 1rem;
+        }
+        
+        .records-table th {
+            text-align: left;
+            padding: 0.75rem;
+            background-color: var(--mini-table-header-bg);
+            font-weight: 600;
+        }
+        
+        .records-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--color-border-soft);
+        }
+        
+        .record-value {
+            font-weight: 700;
+            color: var(--success-color);
+            font-size: 1.1rem;
+        }
+        
+        .record-date {
+            font-size: 0.85rem;
+            color: var(--color-muted);
+        }
+        
+        .trend-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.9rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+        }
+        
+        .trend-indicator.up {
+            background-color: var(--success-bg-weak);
+            color: var(--success-border);
+        }
+        
+        .trend-indicator.down {
+            background-color: var(--danger-bg-weak);
+            color: var(--danger-border);
+        }
+        
+        .comparison-card {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-color-hover) 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .comparison-card h4 {
+            margin-bottom: 1rem;
+            opacity: 0.9;
+        }
+        
+        .comparison-values {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .comparison-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .comparison-arrow {
+            font-size: 2rem;
+            opacity: 0.7;
+        }
+        
+        .percentile-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .percentile-item {
+            text-align: center;
+            padding: 1rem;
+            background-color: var(--mini-table-header-bg);
+            border-radius: var(--radius-md);
+        }
+        
+        .percentile-label {
+            font-size: 0.85rem;
+            color: var(--color-muted);
+            margin-bottom: 0.5rem;
+        }
+        
+        .percentile-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+        }
+    </style>
+</head>
 <body>
     <div class="container">
         <aside class="sidebar">
@@ -33,26 +143,432 @@
                     <div class="user-avatar">CM</div>
                     <div>
                         <p style="font-weight: bold;">Cubista Master</p>
-                        <p style="font-size: 12px; color: #7f8c8d;">Análise em tempo real</p>
+                        <p style="font-size: 12px; color: #7f8c8d;">Análise detalhada</p>
                     </div>
                 </div>
             </div>
+
+            <!-- Records Section -->
+            <section class="section">
+                <header class="section__header">
+                    <h3 class="section__title"><i class="fas fa-crown"></i> Records Pessoais</h3>
+                    <button class="btn btn--sm btn--ghost" onclick="location.reload()">
+                        <i class="fas fa-sync"></i> Atualizar
+                    </button>
+                </header>
+                <div class="section__content">
+                    <table class="records-table">
+                        <thead>
+                            <tr>
+                                <th>Categoria</th>
+                                <th>Melhor Tempo</th>
+                                <th>Data</th>
+                                <th>Tendência (7 dias)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsTableBody">
+                            <tr>
+                                <td><strong>Single</strong></td>
+                                <td><span class="record-value" id="recordSingle">--</span></td>
+                                <td><span class="record-date" id="recordSingleDate">--</span></td>
+                                <td><span class="trend-indicator up" id="trendSingle">
+                                    <i class="fas fa-arrow-up"></i> 5.2%
+                                </span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Ao5</strong></td>
+                                <td><span class="record-value" id="recordAo5">--</span></td>
+                                <td><span class="record-date" id="recordAo5Date">--</span></td>
+                                <td><span class="trend-indicator" id="trendAo5">--</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Ao12</strong></td>
+                                <td><span class="record-value" id="recordAo12">--</span></td>
+                                <td><span class="record-date" id="recordAo12Date">--</span></td>
+                                <td><span class="trend-indicator" id="trendAo12">--</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Ao100</strong></td>
+                                <td><span class="record-value" id="recordAo100">--</span></td>
+                                <td><span class="record-date" id="recordAo100Date">--</span></td>
+                                <td><span class="trend-indicator" id="trendAo100">--</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Comparison Cards -->
+            <div class="stats-grid">
+                <div class="comparison-card">
+                    <h4><i class="fas fa-calendar-week"></i> Esta Semana vs Anterior</h4>
+                    <div class="comparison-values">
+                        <div>
+                            <div style="font-size: 0.9rem; opacity: 0.8;">Esta semana</div>
+                            <div class="comparison-value" id="thisWeekAvg">--</div>
+                        </div>
+                        <div class="comparison-arrow">
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.9rem; opacity: 0.8;">Semana passada</div>
+                            <div class="comparison-value" id="lastWeekAvg">--</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 1rem; font-size: 0.9rem;" id="weekComparison">
+                        Calculando diferença...
+                    </div>
+                </div>
+
+                <div class="section__card">
+                    <h4 class="section__card-title"><i class="fas fa-fire"></i> Sequência Atual</h4>
+                    <p class="section__card-value" id="currentStreak">0 dias</p>
+                    <p class="section__card-text">Dias consecutivos treinando</p>
+                    <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--color-muted);">
+                        Maior sequência: <strong id="bestStreak">0 dias</strong>
+                    </div>
+                </div>
+
+                <div class="section__card">
+                    <h4 class="section__card-title"><i class="fas fa-chart-bar"></i> Volume Mensal</h4>
+                    <p class="section__card-value" id="monthlyVolume">0</p>
+                    <p class="section__card-text">Solves neste mês</p>
+                    <div style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--color-muted);">
+                        Meta: <strong>500 solves</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Percentiles -->
+            <section class="section">
+                <header class="section__header">
+                    <h3 class="section__title"><i class="fas fa-percentage"></i> Distribuição Percentil</h3>
+                </header>
+                <div class="section__content">
+                    <p style="margin-bottom: 1rem; color: var(--color-muted);">
+                        Seus tempos comparados com o conjunto total de dados
+                    </p>
+                    <div class="percentile-container">
+                        <div class="percentile-item">
+                            <div class="percentile-label">25º Percentil</div>
+                            <div class="percentile-value" id="p25">--</div>
+                        </div>
+                        <div class="percentile-item">
+                            <div class="percentile-label">50º Percentil (Mediana)</div>
+                            <div class="percentile-value" id="p50">--</div>
+                        </div>
+                        <div class="percentile-item">
+                            <div class="percentile-label">75º Percentil</div>
+                            <div class="percentile-value" id="p75">--</div>
+                        </div>
+                        <div class="percentile-item">
+                            <div class="percentile-label">90º Percentil</div>
+                            <div class="percentile-value" id="p90">--</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts -->
             <div class="charts-container">
+                <div class="chart-card">
+                    <h3><i class="fas fa-chart-line"></i> Progressão de PB</h3>
+                    <canvas id="pbProgressionChart" class="skeleton"></canvas>
+                </div>
                 <div class="chart-card">
                     <h3><i class="fas fa-sitemap"></i> Desempenho por Método</h3>
                     <canvas id="methodPerformanceChart" class="skeleton"></canvas>
                 </div>
+            </div>
+
+            <div class="charts-container">
                 <div class="chart-card">
                     <h3><i class="fas fa-calendar-day"></i> Volume por Sessão</h3>
                     <canvas id="sessionVolumeChart" class="skeleton"></canvas>
                 </div>
+                <div class="chart-card">
+                    <h3><i class="fas fa-clock"></i> Heatmap de Performance</h3>
+                    <canvas id="heatmapChart" class="skeleton"></canvas>
+                </div>
             </div>
+
             <div class="footer">
-                <p>CubeMaster © 2023 - Estatísticas</p>
-                <p>Visualize tendências e pontos de melhoria.</p>
+                <p>CubeMaster © 2025 - Estatísticas Avançadas</p>
+                <p>Use estas métricas para identificar padrões e otimizar seu treino.</p>
             </div>
         </main>
     </div>
+
+    <script>
+        document.addEventListener('CubeMaster:Ready', initStats);
+        
+        // Fallback check
+        window.addEventListener('load', () => {
+            if (typeof DataManager !== 'undefined' && DataManager.getData().times.length > 0 && !document.getElementById('recordSingle').textContent.includes('s')) {
+                initStats();
+            }
+        });
+
+        function initStats() {
+            const data = DataManager.getData();
+            if (!data || !data.times || data.times.length === 0) {
+                 document.querySelectorAll('.skeleton').forEach(el => el.classList.remove('skeleton'));
+                 return;
+            }
+            const times = data.times;
+            
+            updateRecords(times);
+            updateComparison(times);
+            updateStreaks(times);
+            updatePercentiles(times);
+            renderCharts(times);
+            
+            document.querySelectorAll('.skeleton').forEach(el => el.classList.remove('skeleton'));
+        }
+
+        function updateRecords(times) {
+            // Single
+            const valid = times.filter(t => t.penalty !== 'dnf').map(t => ({...t, eff: Utils.effectiveTime(t)}));
+            if (valid.length) {
+                const best = valid.reduce((min, t) => t.eff < min.eff ? t : min, valid[0]);
+                document.getElementById('recordSingle').textContent = Utils.formatTime(best.eff);
+                document.getElementById('recordSingleDate').textContent = Utils.formatDate(best.date);
+            }
+
+            // Ao5, Ao12, Ao100
+            [5, 12, 100].forEach(n => {
+                let bestAvg = Infinity;
+                let bestDate = null;
+                for (let i = 0; i <= times.length - n; i++) {
+                    const slice = times.slice(i, i + n);
+                    const avg = Utils.aoN(slice, n);
+                    if (!isNaN(avg) && avg < bestAvg) {
+                        bestAvg = avg;
+                        bestDate = slice[n-1].date;
+                    }
+                }
+                if (bestAvg !== Infinity) {
+                    document.getElementById(`recordAo${n}`).textContent = Utils.formatTime(bestAvg);
+                    document.getElementById(`recordAo${n}Date`).textContent = Utils.formatDate(bestDate);
+                }
+            });
+        }
+
+        function updateComparison(times) {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const dayOfWeek = today.getDay(); // 0 (Sun) - 6 (Sat)
+            // Adjust to Monday start if needed, but standard getDay is fine for logic
+            const diffToMon = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // 0 for Mon
+            
+            const startThisWeek = new Date(today);
+            startThisWeek.setDate(today.getDate() - diffToMon);
+            
+            const startLastWeek = new Date(startThisWeek);
+            startLastWeek.setDate(startThisWeek.getDate() - 7);
+            const endLastWeek = new Date(startThisWeek);
+
+            const thisWeekTimes = times.filter(t => new Date(t.date) >= startThisWeek);
+            const lastWeekTimes = times.filter(t => {
+                const d = new Date(t.date);
+                return d >= startLastWeek && d < endLastWeek;
+            });
+
+            const avgThis = Utils.avg(thisWeekTimes.map(Utils.effectiveTime).filter(Number.isFinite));
+            const avgLast = Utils.avg(lastWeekTimes.map(Utils.effectiveTime).filter(Number.isFinite));
+
+            document.getElementById('thisWeekAvg').textContent = isNaN(avgThis) ? '--' : Utils.formatTime(avgThis);
+            document.getElementById('lastWeekAvg').textContent = isNaN(avgLast) ? '--' : Utils.formatTime(avgLast);
+
+            const compEl = document.getElementById('weekComparison');
+            if (!isNaN(avgThis) && !isNaN(avgLast)) {
+                const diff = ((avgLast - avgThis) / avgLast) * 100;
+                const isImprovement = diff > 0;
+                const color = isImprovement ? '#10b981' : '#ef4444';
+                const icon = isImprovement ? 'up' : 'down';
+                const text = isImprovement ? 'melhorou' : 'piorou';
+                compEl.innerHTML = `<span style="color: ${color}"><i class="fas fa-arrow-${icon}"></i> Você ${text} ${Math.abs(diff).toFixed(1)}%</span>`;
+            } else {
+                compEl.textContent = 'Dados insuficientes';
+            }
+        }
+
+        function updateStreaks(times) {
+            const dates = [...new Set(times.map(t => new Date(t.date).toDateString()))].map(d => new Date(d)).sort((a,b) => b-a);
+            
+            let currentStreak = 0;
+            let bestStreak = 0;
+            
+            if (dates.length > 0) {
+                const today = new Date().toDateString();
+                const lastDate = dates[0].toDateString();
+                
+                // If last solve was today or yesterday, streak is active
+                const diffDays = (new Date(today) - new Date(lastDate)) / (1000 * 60 * 60 * 24);
+                
+                if (diffDays <= 1) {
+                    currentStreak = 1;
+                    for (let i = 0; i < dates.length - 1; i++) {
+                        const d1 = dates[i];
+                        const d2 = dates[i+1];
+                        const diff = (d1 - d2) / (1000 * 60 * 60 * 24);
+                        if (Math.round(diff) === 1) {
+                            currentStreak++;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Calculate Best Streak (simplified)
+            let tempStreak = 1;
+            let maxStreak = 1;
+            for(let i=0; i<dates.length-1; i++) {
+                const diff = (dates[i] - dates[i+1]) / (1000*60*60*24);
+                if(Math.round(diff) === 1) tempStreak++;
+                else {
+                    if(tempStreak > maxStreak) maxStreak = tempStreak;
+                    tempStreak = 1;
+                }
+            }
+            if(tempStreak > maxStreak) maxStreak = tempStreak;
+            if (dates.length === 0) maxStreak = 0;
+
+            document.getElementById('currentStreak').textContent = `${currentStreak} dias`;
+            document.getElementById('bestStreak').textContent = `${maxStreak} dias`;
+            
+            // Monthly Volume
+            const now = new Date();
+            const monthlyCount = times.filter(t => {
+                const d = new Date(t.date);
+                return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+            }).length;
+            document.getElementById('monthlyVolume').textContent = monthlyCount;
+        }
+
+        function updatePercentiles(times) {
+            const valid = times.map(Utils.effectiveTime).filter(Number.isFinite).sort((a,b) => a-b);
+            if (!valid.length) return;
+            
+            const getP = (p) => valid[Math.floor(valid.length * p)];
+            
+            document.getElementById('p25').textContent = Utils.formatTime(getP(0.25));
+            document.getElementById('p50').textContent = Utils.formatTime(getP(0.50));
+            document.getElementById('p75').textContent = Utils.formatTime(getP(0.75));
+            document.getElementById('p90').textContent = Utils.formatTime(getP(0.90));
+        }
+
+        function renderCharts(times) {
+            // PB Progression
+            const monthlyPBs = {};
+            times.forEach(t => {
+                if (t.penalty === 'dnf') return;
+                const date = new Date(t.date);
+                const key = `${date.getFullYear()}-${date.getMonth()}`; // Year-Month
+                const eff = Utils.effectiveTime(t);
+                if (!monthlyPBs[key] || eff < monthlyPBs[key]) {
+                    monthlyPBs[key] = eff;
+                }
+            });
+            
+            const sortedKeys = Object.keys(monthlyPBs).sort();
+            const pbData = sortedKeys.map(k => monthlyPBs[k]);
+            const pbLabels = sortedKeys.map(k => {
+                const [y, m] = k.split('-');
+                return new Date(y, m).toLocaleDateString('pt-BR', { month: 'short' });
+            });
+
+            new Chart(document.getElementById('pbProgressionChart'), {
+                type: 'line',
+                data: {
+                    labels: pbLabels,
+                    datasets: [{
+                        label: 'PB (Single)',
+                        data: pbData,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { responsive: true, scales: { y: { reverse: true } }, plugins: { legend: { display: false } } }
+            });
+
+            // Method Performance
+            const methods = {};
+            times.forEach(t => {
+                const m = t.method || 'CFOP';
+                if (!methods[m]) methods[m] = [];
+                if (t.penalty !== 'dnf') methods[m].push(Utils.effectiveTime(t));
+            });
+            
+            new Chart(document.getElementById('methodPerformanceChart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(methods),
+                    datasets: [{
+                        label: 'Média (s)',
+                        data: Object.keys(methods).map(m => Utils.avg(methods[m])),
+                        backgroundColor: ['#2563eb', '#8b5cf6', '#f59e0b']
+                    }]
+                },
+                options: { responsive: true }
+            });
+
+            // Session Volume (Day of Week)
+            const days = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+            const volume = new Array(7).fill(0);
+            times.forEach(t => volume[new Date(t.date).getDay()]++);
+            
+            new Chart(document.getElementById('sessionVolumeChart'), {
+                type: 'line',
+                data: {
+                    labels: days,
+                    datasets: [{
+                        label: 'Solves',
+                        data: volume,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: { responsive: true }
+            });
+
+            // Heatmap (Time of Day)
+            const hourRanges = ['6h-9h', '9h-12h', '12h-15h', '15h-18h', '18h-21h', '21h-0h']; // Simplified
+            const hourData = new Array(6).fill(0).map(() => []);
+            
+            times.forEach(t => {
+                if (t.penalty === 'dnf') return;
+                const h = new Date(t.date).getHours();
+                let idx = -1;
+                if (h >= 6 && h < 9) idx = 0;
+                else if (h >= 9 && h < 12) idx = 1;
+                else if (h >= 12 && h < 15) idx = 2;
+                else if (h >= 15 && h < 18) idx = 3;
+                else if (h >= 18 && h < 21) idx = 4;
+                else if (h >= 21 || h < 6) idx = 5; // Night owls
+                
+                if (idx !== -1) hourData[idx].push(Utils.effectiveTime(t));
+            });
+
+            new Chart(document.getElementById('heatmapChart'), {
+                type: 'bar',
+                data: {
+                    labels: hourRanges,
+                    datasets: [{
+                        label: 'Média (s)',
+                        data: hourData.map(arr => Utils.avg(arr) || 0),
+                        backgroundColor: '#2563eb'
+                    }]
+                },
+                options: { responsive: true }
+            });
+        }
+    </script>
     <script src="./assets/js/script.js"></script>
 </body>
 </html>

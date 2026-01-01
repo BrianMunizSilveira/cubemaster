@@ -4,6 +4,7 @@
 const CONFIG = {
     TIMES_STORAGE_KEY: 'times-data',
     THEME_KEY: 'theme-preference',
+    INSPECTION_PREF_KEY: 'inspection-preference',
     DEFAULT_PAGE_SIZE: 100,
     DEFAULT_CUBE: '3x3',
     DEFAULT_METHOD: 'CFOP',
@@ -1308,6 +1309,21 @@ const EventHandlers = (function() {
             if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
         }
         
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', () => {
+                document.body.classList.toggle('sidebar-collapsed');
+                const icon = sidebarToggle.querySelector('i');
+                if (document.body.classList.contains('sidebar-collapsed')) {
+                    icon.classList.remove('fa-chevron-left');
+                    icon.classList.add('fa-chevron-right');
+                } else {
+                    icon.classList.remove('fa-chevron-right');
+                    icon.classList.add('fa-chevron-left');
+                }
+            });
+        }
+
         if (toggleBtn) {
             toggleBtn.addEventListener('click', function () {
                 const open = document.body.classList.contains('nav-open');
@@ -1617,7 +1633,30 @@ const EventHandlers = (function() {
         });
     }
 
+    function setupGlobalKeys() {
+        window.addEventListener('keydown', function(e) {
+            // KILL BACKSPACE & ALT+LEFT (Navigation)
+            const isBackspace = e.key === 'Backspace';
+            const isAltLeft = e.altKey && e.key === 'ArrowLeft';
+
+            if (isBackspace || isAltLeft) {
+                const target = e.target;
+                const isEditable = target.tagName === 'INPUT' || 
+                                 target.tagName === 'TEXTAREA' || 
+                                 target.isContentEditable;
+                
+                // Only allow if in an editable field (and not Alt+Left)
+                if (!isEditable || isAltLeft) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    // Optional: Visual feedback or console log could go here
+                }
+            }
+        }, { capture: true });
+    }
+
     function setupEventListeners() {
+        setupGlobalKeys();
         setupNav();
         setupPreferences();
         setupDataManagement();
@@ -1675,6 +1714,14 @@ const Timer = {
         
         if (!this.display) return;
         
+        // Restore inspection preference
+        const storedInspection = localStorage.getItem(CONFIG.INSPECTION_PREF_KEY);
+        const toggleInspection = document.getElementById('toggleInspection');
+        if (toggleInspection) {
+            this.useInspection = storedInspection === 'true';
+            toggleInspection.checked = this.useInspection;
+        }
+
         this.generateScramble();
         this.attachEvents();
         this.updateSessionStats();
@@ -1727,12 +1774,18 @@ const Timer = {
         if (toggleInspection) {
             toggleInspection.addEventListener('change', (e) => {
                 this.useInspection = e.target.checked;
+                localStorage.setItem(CONFIG.INSPECTION_PREF_KEY, this.useInspection);
                 e.target.blur();
             });
         }
     },
     
     handleKeyDown(e) {
+        if (e.code === 'Escape') {
+            this.cancel();
+            return;
+        }
+
         if (e.code === 'Space') {
             e.preventDefault();
             
@@ -1843,7 +1896,7 @@ const Timer = {
             clearInterval(this.inspectionInterval);
             const inspectionTime = (Date.now() - this.inspectionStart) / 1000;
             if (inspectionTime > 15 && inspectionTime <= 17) {
-                penalty = CONFIG.PENALTIES.PLUS_2;
+                penalty = CONFIG.PENALTIES.PLUS2;
             } else if (inspectionTime > 17) {
                 penalty = CONFIG.PENALTIES.DNF;
             }
@@ -1899,10 +1952,30 @@ const Timer = {
         ChartManager.initTimeEvolutionChart();
         ChartManager.initTimeDistributionChart();
         
-        if (penalty === CONFIG.PENALTIES.PLUS_2) Utils.showToast('Penalidade +2 aplicada!');
+        if (penalty === CONFIG.PENALTIES.PLUS2) Utils.showToast('Penalidade +2 aplicada!');
         if (penalty === CONFIG.PENALTIES.DNF) Utils.showToast('DNF aplicado!');
     },
     
+    cancel() {
+        if (['running', 'inspection_running', 'ready_inspection', 'ready_solve'].includes(this.state)) {
+            clearInterval(this.interval);
+            clearInterval(this.inspectionInterval);
+            this.state = 'idle';
+            this.display.classList.remove('running', 'ready');
+            this.display.style.color = CONFIG.CHART_CONFIGS.COLORS.DANGER;
+            this.display.textContent = 'CANCELADO';
+            
+            setTimeout(() => {
+                if (this.state === 'idle') {
+                    this.display.textContent = '0.00';
+                    this.display.style.color = '';
+                }
+            }, 1000);
+            
+            this.currentPenalty = CONFIG.PENALTIES.NONE;
+        }
+    },
+
     deleteLast() {
         const data = DataManager.getData();
         if (data.times.length === 0) return;
@@ -1940,7 +2013,7 @@ const Timer = {
                 list.innerHTML = reversed.slice(0, 50).map((t, i) => {
                     let timeDisplay = t.time.toFixed(2);
                     let rowClass = '';
-                    if (t.penalty === CONFIG.PENALTIES.PLUS_2) {
+                    if (t.penalty === CONFIG.PENALTIES.PLUS2) {
                         timeDisplay = `${(t.time + 2).toFixed(2)}+`;
                         rowClass = 'penalty-plus2';
                     } else if (t.penalty === CONFIG.PENALTIES.DNF) {
@@ -1949,9 +2022,10 @@ const Timer = {
                     }
 
                     return `
-                    <div class="solve-item ${rowClass}" data-index="${times.length - 1 - i}">
+                    <div class="solve-item ${rowClass}" data-index="${times.length - 1 - i}" title="Scramble: ${t.scramble}">
                         <span class="count">${times.length - i}.</span>
                         <span class="time">${timeDisplay}</span>
+                        <span class="small-scramble" style="display:block; font-size:0.7rem; color:var(--color-muted); width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${t.scramble}</span>
                         <span class="actions" title="Excluir"><i class="fas fa-trash"></i></span>
                     </div>
                 `}).join('');
@@ -2018,5 +2092,7 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Setup event listeners
     EventHandlers.setupEventListeners();
     
+    window.dispatchEvent(new CustomEvent('CubeMaster:Ready'));
+
     Utils.showToast('Cubing Analytics carregado!');
 });
