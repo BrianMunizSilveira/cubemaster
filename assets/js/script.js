@@ -655,19 +655,50 @@ const DataManager = (function() {
         localStorage.setItem(CONFIG.TIMES_STORAGE_KEY, JSON.stringify(appData.times));
     }
 
+    function exportToTwistyTimer() {
+        const data = getData();
+        const header = "Puzzle;Category;Time(millis);Date(millis);Scramble;Penalty;Comment";
+        const rows = data.times.map(t => {
+            const puzzle = (t.cube === '3x3' ? '333' : t.cube) || '333';
+            const category = "Normal";
+            const timeMs = Math.round(t.time * 1000);
+            const dateMs = t.date ? new Date(t.date).getTime() : new Date().getTime();
+            const scramble = t.scramble ? `"${t.scramble.replace(/"/g, '""')}"` : '""';
+            let penalty = 0;
+            if (t.penalty === CONFIG.PENALTIES.PLUS2) penalty = 1;
+            else if (t.penalty === CONFIG.PENALTIES.DNF) penalty = 2;
+            const comment = "";
+            
+            return `"${puzzle}";"${category}";"${timeMs}";"${dateMs}";${scramble};"${penalty}";"${comment}"`;
+        });
+        
+        const csvContent = [header, ...rows].join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', `backup_twistytimer_${new Date().toISOString().slice(0,10)}.txt`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+
     return {
-        initData,
-        buildTimesRows,
-        addSolve,
-        deleteSolve,
-        clearAllData,
-        setPageSize,
-        setCurrentPage,
-        getCurrentPage,
-        getTotalPages,
-        getData,
-        setData
-    };
+            initData,
+            buildTimesRows,
+            addSolve,
+            deleteSolve,
+            clearAllData,
+            setPageSize,
+            setCurrentPage,
+            getCurrentPage,
+            getTotalPages,
+            getData,
+            setData,
+            exportToTwistyTimer
+        };
 })();
 
 // ============================================
@@ -1766,6 +1797,11 @@ const Timer = {
         
         document.getElementById('btnResetSession')?.addEventListener('click', (e) => {
             this.resetSession();
+            e.target.blur();
+        });
+
+        document.getElementById('btnExportTwisty')?.addEventListener('click', (e) => {
+            DataManager.exportToTwistyTimer();
             e.target.blur();
         });
 
