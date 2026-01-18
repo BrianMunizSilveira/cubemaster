@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
     <link rel="preload" as="script" href="./assets/js/script.js">
     <link rel="icon" type="image/x-icon" href="https://img.icons8.com/color/48/rubiks-cube.png">
 </head>
+
 <body>
     <div class="container">
         <aside class="sidebar">
@@ -19,6 +21,7 @@
             </div>
             <ul class="nav-menu">
                 <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="./treinos.html"><i class="fas fa-stopwatch"></i> Cronometro</a></li>
                 <li><a href="./historico.html"><i class="fas fa-stopwatch"></i> Meus Tempos</a></li>
                 <li><a href="estatisticas.html"><i class="fas fa-chart-bar"></i> Estatísticas</a></li>
                 <li><a href="aprender.html" class="active"><i class="fas fa-graduation-cap"></i> Aprender</a></li>
@@ -29,7 +32,8 @@
         </aside>
         <main class="main-content">
             <div class="header">
-                <button class="btn btn--ghost menu-toggle" id="menuToggle" aria-label="Abrir menu"><i class="fas fa-bars"></i></button>
+                <button class="btn btn--ghost menu-toggle" id="menuToggle" aria-label="Abrir menu"><i
+                        class="fas fa-bars"></i></button>
                 <h2>Configurações</h2>
                 <div class="user-info">
                     <div class="user-avatar">CM</div>
@@ -62,10 +66,13 @@
                     <h3 class="section__title"><i class="fas fa-database"></i> Dados</h3>
                 </header>
                 <div class="section__content">
-                    <p style="margin-bottom: 1rem; color: var(--text-secondary);">Gerencie seus tempos armazenados no navegador.</p>
+                    <p style="margin-bottom: 1rem; color: var(--text-secondary);">Gerencie seus tempos armazenados no
+                        navegador.</p>
                     <div class="section__actions">
-                        <button class="btn" id="btnUseLocalEmpty"><i class="fas fa-eraser"></i> Começar Limpo (Apenas Local)</button>
-                        <button class="btn btn--danger" id="btnWipeAll"><i class="fas fa-trash-alt"></i> Apagar Tudo</button>
+                        <button class="btn" id="btnUseLocalEmpty"><i class="fas fa-eraser"></i> Começar Limpo (Apenas
+                            Local)</button>
+                        <button class="btn btn--danger" id="btnWipeAll"><i class="fas fa-trash-alt"></i> Apagar
+                            Tudo</button>
                     </div>
                 </div>
             </section>
@@ -77,4 +84,5 @@
     </div>
     <script src="./assets/js/script.js"></script>
 </body>
+
 </html>

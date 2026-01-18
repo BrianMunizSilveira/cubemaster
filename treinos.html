@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -162,14 +163,14 @@
             transition: .4s;
         }
 
-        .toggle-switch input:checked + .slider {
+        .toggle-switch input:checked+.slider {
             background-color: var(--primary-color);
         }
 
-        .toggle-switch input:checked + .slider:before {
+        .toggle-switch input:checked+.slider:before {
             transform: translateX(20px);
         }
-        
+
         .toggle-switch .label-text {
             font-size: 0.95rem;
             color: var(--secondary-color);
@@ -305,14 +306,14 @@
             gap: 1rem;
         }
 
-        .solve-item .count { 
-            color: var(--color-muted); 
+        .solve-item .count {
+            color: var(--color-muted);
             min-width: 45px;
             font-weight: 600;
             font-size: 0.85rem;
         }
-        
-        .solve-item .time { 
+
+        .solve-item .time {
             font-weight: 700;
             font-size: 1rem;
             color: var(--secondary-color);
@@ -320,16 +321,16 @@
             text-align: right;
             font-family: 'Roboto Mono', monospace;
         }
-        
-        .solve-item .actions { 
-            opacity: 0.5; 
-            transition: opacity 0.2s; 
+
+        .solve-item .actions {
+            opacity: 0.5;
+            transition: opacity 0.2s;
             cursor: pointer;
             padding: 0.5rem;
             border-radius: var(--radius-sm);
         }
-        
-        .solve-item .actions:hover { 
+
+        .solve-item .actions:hover {
             opacity: 1;
             background-color: var(--danger-bg-weak);
             color: var(--danger-color);
@@ -370,24 +371,29 @@
             .session-info {
                 width: 280px;
             }
-            
+
             body.sidebar-hidden .session-info {
                 width: 320px;
             }
-            
+
             .main-content {
                 margin-right: 280px;
             }
-            
+
             body.sidebar-hidden .main-content {
                 margin-right: 320px;
             }
         }
 
         @media (max-width: 768px) {
-            .timer-display { font-size: 5rem; }
-            body.sidebar-hidden .timer-display { font-size: 7rem; }
-            
+            .timer-display {
+                font-size: 5rem;
+            }
+
+            body.sidebar-hidden .timer-display {
+                font-size: 7rem;
+            }
+
             .session-info {
                 position: fixed;
                 width: 100%;
@@ -401,23 +407,29 @@
                 border-top: 1px solid var(--color-border);
                 z-index: 100;
             }
-            
+
             body.sidebar-hidden .session-info {
                 width: 100%;
             }
-            
+
             .main-content {
                 margin-right: 0;
                 margin-bottom: 40vh;
             }
-            
+
             body.sidebar-hidden .main-content {
                 margin-right: 0;
             }
-            
-            .scramble-display { font-size: 1.1rem; padding: 1rem; }
-            #sidebarToggle { display: none !important; }
-            
+
+            .scramble-display {
+                font-size: 1.1rem;
+                padding: 1rem;
+            }
+
+            #sidebarToggle {
+                display: none !important;
+            }
+
             .stat-box {
                 flex-direction: column;
                 align-items: flex-start;
@@ -426,9 +438,17 @@
         }
 
         @media (max-width: 576px) {
-            .timer-display { font-size: 4rem; }
-            body.sidebar-hidden .timer-display { font-size: 5rem; }
-            .stat-box .value { font-size: 1.2rem; }
+            .timer-display {
+                font-size: 4rem;
+            }
+
+            body.sidebar-hidden .timer-display {
+                font-size: 5rem;
+            }
+
+            .stat-box .value {
+                font-size: 1.2rem;
+            }
         }
     </style>
 </head>
@@ -441,10 +461,12 @@
                 <h1>CubeMaster</h1>
             </div>
             <ul class="nav-menu">
-                <li><a href="index.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
-                <li><a href="historico.html"><i class="fas fa-history"></i> Histórico</a></li>
-                <li><a href="estatisticas.html"><i class="fas fa-chart-line"></i> Estatísticas</a></li>
-                <li><a href="treinos.html"><i class="fas fa-stopwatch"></i> Treinos</a></li>
+                <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="./treinos.html"><i class="fas fa-stopwatch"></i> Cronometro</a></li>
+                <li><a href="./historico.html"><i class="fas fa-stopwatch"></i> Meus Tempos</a></li>
+                <li><a href="estatisticas.html"><i class="fas fa-chart-bar"></i> Estatísticas</a></li>
+                <li><a href="aprender.html" class="active"><i class="fas fa-graduation-cap"></i> Aprender</a></li>
+                <li><a href="algoritmos.html"><i class="fas fa-code"></i> Algoritmos</a></li>
                 <li><a href="configuracoes.html"><i class="fas fa-cog"></i> Configurações</a></li>
                 <li><a href="ajuda.html"><i class="fas fa-question-circle"></i> Ajuda</a></li>
             </ul>
@@ -455,7 +477,8 @@
                     <button class="btn btn--ghost menu-toggle" id="menuToggle" aria-label="Abrir menu">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <button class="btn btn--ghost" id="sidebarToggle" aria-label="Ocultar menu lateral" title="Ocultar menu lateral (Ctrl+H)">
+                    <button class="btn btn--ghost" id="sidebarToggle" aria-label="Ocultar menu lateral"
+                        title="Ocultar menu lateral (Ctrl+H)">
                         <i class="fas fa-times"></i>
                     </button>
                     <h2>Cronômetro</h2>
@@ -467,12 +490,12 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="timer-section">
                 <div id="scrambleDisplay" class="scramble-display">Carregando scramble...</div>
-                
+
                 <div id="timerDisplay" class="timer-display">0.00</div>
-                
+
                 <div class="timer-settings">
                     <label class="toggle-switch">
                         <input type="checkbox" id="toggleInspection">
@@ -480,7 +503,7 @@
                         <span class="label-text">Inspeção WCA (15s)</span>
                     </label>
                 </div>
-                
+
                 <div class="timer-controls">
                     <button class="btn btn--ghost" id="btnGenScramble" title="Novo Scramble">
                         <i class="fas fa-random"></i> Novo Scramble
@@ -497,12 +520,12 @@
                 </div>
 
                 <div class="keyboard-hint">
-                    <strong>Atalhos:</strong> 
-                    <kbd>Espaço</kbd> Iniciar/Parar • 
-                    <kbd>Ctrl</kbd>+<kbd>H</kbd> Ocultar Menu • 
+                    <strong>Atalhos:</strong>
+                    <kbd>Espaço</kbd> Iniciar/Parar •
+                    <kbd>Ctrl</kbd>+<kbd>H</kbd> Ocultar Menu •
                     <kbd>Esc</kbd> Novo Scramble
                 </div>
-                
+
                 <div class="session-info">
                     <div class="session-stats-grid">
                         <div class="stat-box">
@@ -526,56 +549,58 @@
                             <div class="value" id="sessionBest">--</div>
                         </div>
                     </div>
-                    
+
                     <div class="solves-list">
                         <div class="solves-list-header">
                             <i class="fas fa-history"></i> Tempos Recentes
                         </div>
                         <div id="solvesList">
                             <div style="padding: 2rem 1rem; text-align: center; color: var(--color-muted);">
-                                <i class="fas fa-stopwatch" style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5;"></i>
+                                <i class="fas fa-stopwatch"
+                                    style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5;"></i>
                                 <p>Nenhum tempo registrado</p>
-                                <p style="font-size: 0.85rem; margin-top: 0.5rem;">Pressione <kbd>Espaço</kbd> para começar</p>
+                                <p style="font-size: 0.85rem; margin-top: 0.5rem;">Pressione <kbd>Espaço</kbd> para
+                                    começar</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
             <div class="footer">
                 <p>CubeMaster © 2025 - Cronômetro de Treino</p>
                 <p>Mantenha o foco e a consistência em suas sessões</p>
             </div>
         </main>
     </div>
-    
+
     <script>
         // Sidebar Hide Functionality (Resets on page reload)
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const sidebarToggle = document.getElementById('sidebarToggle');
             const body = document.body;
-            
+
             // Sidebar is always visible on page load (no localStorage check)
             // Menu sempre visível ao carregar a página
-            
+
             // Hide sidebar temporarily (only for current session)
             if (sidebarToggle) {
-                sidebarToggle.addEventListener('click', function() {
+                sidebarToggle.addEventListener('click', function () {
                     body.classList.add('sidebar-hidden');
                     this.style.display = 'none';
                     // Não salva no localStorage - reseta ao recarregar
                 });
             }
-            
+
             // Keyboard shortcut: Ctrl+H to hide sidebar
-            document.addEventListener('keydown', function(e) {
+            document.addEventListener('keydown', function (e) {
                 if (e.ctrlKey && e.key === 'h') {
                     e.preventDefault();
                     if (!body.classList.contains('sidebar-hidden')) {
                         sidebarToggle?.click();
                     }
                 }
-                
+
                 // Esc to generate new scramble (only when timer is at 0.00)
                 if (e.key === 'Escape') {
                     const timerDisplay = document.getElementById('timerDisplay');
@@ -588,4 +613,5 @@
     </script>
     <script src="./assets/js/script.js"></script>
 </body>
+
 </html>
