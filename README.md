@@ -46,29 +46,34 @@
 ## ✨ Funcionalidades
 
 ### 📊 Dashboard Inteligente
+
 - **Cards de Métricas**: PB, Ao5, Ao12, consistência e total de solves
 - **Análise Evolutiva**: Comparação de períodos (7 dias, 30 dias, geral)
 - **Métricas Avançadas**: Nível estimado, probabilidade de PB, melhor horário
 - **Metas Semanais**: Progresso visual de objetivos
 
 ### 📈 Gráficos Interativos
+
 - **Evolução Temporal**: Últimos 30 solves com média móvel
 - **Distribuição de Tempos**: Histograma dinâmico com meta customizável
 - **Performance por Horário**: Identifique seu pico de produtividade
 - **Método e Volume**: Compare estratégias e acompanhe sessões
 
 ### 📝 Gestão de Tempos
+
 - **Histórico Completo**: Visualize todos os seus solves com filtros
 - **Paginação Inteligente**: 100, 250, 500, 1000 ou todos os registros
 - **Adicionar/Editar/Excluir**: Gestão manual de tempos
 - **Badges Visuais**: PB, DNF, +2 e classificação de performance
 
 ### 🔄 Importação e Exportação
+
 - **Importação csTimer**: Suporte completo ao formato `.txt`
 - **Exportação CSV**: Dados estruturados para análise externa
 - **Reset Seguro**: Confirmação em duas etapas com opção de reimportação
 
 ### ⚙️ Configurações
+
 - **Cartões Compactos**: Otimize espaço vertical
 - **Animações**: Controle transições em gráficos
 - **Modo Escuro**: Ativação automática baseada no sistema
@@ -96,6 +101,7 @@ xdg-open index.html  # Linux
 ### Opção 2: Servidor Local (Recomendado)
 
 #### Python
+
 ```bash
 # Python 3.x
 python -m http.server 8000
@@ -103,6 +109,7 @@ python -m http.server 8000
 ```
 
 #### Node.js
+
 ```bash
 # Com npx (sem instalação)
 npx serve -s .
@@ -113,11 +120,13 @@ http-server -p 8000
 ```
 
 #### PHP
+
 ```bash
 php -S localhost:8000
 ```
 
 #### Live Server (VS Code)
+
 1. Instale a extensão **Live Server**
 2. Clique direito em `index.html`
 3. Selecione "Open with Live Server"
@@ -139,6 +148,7 @@ php -S localhost:8000
    - Selecione seu arquivo `.txt`
 
 **Formato Esperado**:
+
 ```
 Gerado pelo csTimer em 2024-12-15
 solves/total: 233/238
@@ -211,32 +221,37 @@ cubemaster/
 
 ### Arquivos Principais
 
-| Arquivo | Descrição | Linhas |
-|---------|-----------|--------|
-| `styles.css` | Design tokens, responsividade, modo escuro | ~800 |
-| `script.js` | Importação, paginação, gráficos, estatísticas | ~1200 |
-| `index.html` | Dashboard com métricas e gráficos principais | ~250 |
-| `historico.html` | Tabela de tempos com CRUD completo | ~150 |
+| Arquivo          | Descrição                                     | Linhas |
+| ---------------- | --------------------------------------------- | ------ |
+| `styles.css`     | Design tokens, responsividade, modo escuro    | ~800   |
+| `script.js`      | Importação, paginação, gráficos, estatísticas | ~1200  |
+| `index.html`     | Dashboard com métricas e gráficos principais  | ~250   |
+| `historico.html` | Tabela de tempos com CRUD completo            | ~150   |
 
 ---
 
 ## 🛠️ Tecnologias
 
 ### Core
+
 - **HTML5**: Estrutura semântica
 - **CSS3**: Grid, Flexbox, Custom Properties
 - **JavaScript ES6+**: Modules, Arrow Functions, Async/Await
 
 ### Bibliotecas (via CDN)
+
 ```html
 <!-- Gráficos -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
 
 <!-- Ícones -->
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+/>
 ```
 
 ### APIs Utilizadas
+
 - `localStorage`: Persistência local
 - `FileReader`: Importação de arquivos
 - `Blob` / `URL.createObjectURL`: Exportação CSV
@@ -244,6 +259,7 @@ cubemaster/
 - `prefers-color-scheme`: Modo escuro automático
 
 ### Padrões e Boas Práticas
+
 - ✅ **BEM** (Block Element Modifier) para CSS
 - ✅ **Mobile First** para responsividade
 - ✅ **Progressive Enhancement**
@@ -257,6 +273,7 @@ cubemaster/
 Contribuições são muito bem-vindas! Para contribuir:
 
 ### 1. Fork e Clone
+
 ```bash
 git clone https://github.com/SEU-USUARIO/cubemaster.git
 cd cubemaster
@@ -264,11 +281,13 @@ git checkout -b feature/minha-feature
 ```
 
 ### 2. Faça suas Alterações
+
 - Siga as convenções de código existentes
 - Use design tokens CSS sempre que possível
 - Teste em diferentes navegadores e tamanhos de tela
 
 ### 3. Commit e Push
+
 ```bash
 git add .
 git commit -m "feat(historico): adiciona filtro por data"
@@ -276,11 +295,13 @@ git push origin feature/minha-feature
 ```
 
 ### 4. Abra um Pull Request
+
 - Descreva suas mudanças claramente
 - Adicione screenshots se aplicável
 - Mencione issues relacionadas
 
 ### Convenções de Commit
+
 ```
 feat(escopo): nova funcionalidade
 fix(escopo): correção de bug
@@ -292,6 +313,7 @@ test(escopo): adição de testes
 ```
 
 ### Áreas para Contribuir
+
 - 🐛 Reportar bugs
 - 💡 Sugerir funcionalidades
 - 📝 Melhorar documentação
@@ -304,24 +326,28 @@ test(escopo): adição de testes
 ## 🗺️ Roadmap
 
 ### v2.1 (Q1 2025)
+
 - [ ] Filtros avançados (data, método, cubo, penalidade)
 - [ ] Exportação completa (ignorando paginação)
 - [ ] Gráfico de progressão temporal (linha do tempo)
 - [ ] Estatísticas por sessão de treino
 
 ### v2.2 (Q2 2025)
+
 - [ ] PWA (Progressive Web App)
 - [ ] Sincronização via Google Drive/Dropbox
 - [ ] Comparação de PBs entre períodos
 - [ ] Metas customizáveis
 
 ### v3.0 (Q3 2025)
+
 - [ ] Backend opcional (Node.js + MongoDB)
 - [ ] Autenticação e perfis de usuário
 - [ ] Ranking comunitário
 - [ ] Integração com WCA
 
 ### Backlog
+
 - Virtualização de tabelas (react-window)
 - Análise de algoritmos (F2L, OLL, PLL)
 - Timers integrado (cronômetro nativo)
@@ -397,4 +423,3 @@ Encontrou um bug ou tem uma sugestão?
 Feito com ❤️ e muito cubo mágico 🎲
 
 </div>
-
