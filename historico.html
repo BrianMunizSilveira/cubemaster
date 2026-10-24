@@ -10,6 +10,13 @@
     <link rel="stylesheet" href="./assets/css/styles.css">
     <link rel="preload" as="script" href="./assets/js/script.js">
     <link rel="icon" type="image/x-icon" href="https://img.icons8.com/color/48/rubiks-cube.png">
+    <script>
+    // Verifica se o usuário já escolheu um tema manualmente
+    const savedTheme = localStorage.getItem('theme-preference');
+    if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+</script>
 </head>
 
 <body>
@@ -153,7 +160,7 @@
             </div>
         </main>
     </div>
-    <script src="./assets/js/script.js"></script>
+    <script type="module" src="./assets/js/script.js"></script>
 </body>
 
 </html>

@@ -8,7 +8,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="./assets/css/styles.css">
+    <script>
+        // Verifica se o usuário já escolheu um tema manualmente
+        const savedTheme = localStorage.getItem('theme-preference');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        }
+    </script>
     <link rel="icon" type="image/x-icon" href="https://img.icons8.com/color/48/rubiks-cube.png">
+
     <style>
         .stats-grid {
             display: grid;
@@ -131,10 +139,10 @@
             </div>
             <ul class="nav-menu">
                 <li><a href="index.html"><i class="fas fa-home"></i> Dashboard</a></li>
-                 <li><a href="./treinos.html"><i class="fas fa-stopwatch"></i> Cronometro</a></li>
+                <li><a href="./treinos.html"><i class="fas fa-stopwatch"></i> Cronometro</a></li>
                 <li><a href="./historico.html"><i class="fas fa-stopwatch"></i> Meus Tempos</a></li>
-                <li><a href="estatisticas.html"><i class="fas fa-chart-bar"></i> Estatísticas</a></li>
-                <li><a href="aprender.html" class="active"><i class="fas fa-graduation-cap"></i> Aprender</a></li>
+                <li><a href="estatisticas.html" class="active"><i class="fas fa-chart-bar"></i> Estatísticas</a></li>
+                <li><a href="aprender.html"><i class="fas fa-graduation-cap"></i> Aprender</a></li>
                 <li><a href="algoritmos.html"><i class="fas fa-code"></i> Algoritmos</a></li>
                 <li><a href="configuracoes.html"><i class="fas fa-cog"></i> Configurações</a></li>
                 <li><a href="ajuda.html"><i class="fas fa-question-circle"></i> Ajuda</a></li>
@@ -305,35 +313,47 @@
         </main>
     </div>
 
+    <script type="module" src="./assets/js/script.js"></script>
+
     <script>
-        document.addEventListener('CubeMaster:Ready', initStats);
+        let jaIniciou = false;
 
-        // Fallback check
-        window.addEventListener('load', () => {
-            if (typeof DataManager !== 'undefined' && DataManager.getData().times.length > 0 && !document.getElementById('recordSingle').textContent.includes('s')) {
-                initStats();
-            }
-        });
+        function iniciarEstatisticas() {
+            // Impede que a função rode duas vezes
+            if (jaIniciou) return;
 
-        function initStats() {
+            // Verifica se o objeto global já foi criado pelo script.js
+            if (typeof window.CubeMasterApp === 'undefined') return;
+
+            jaIniciou = true;
+            const { DataManager, Utils } = window.CubeMasterApp;
             const data = DataManager.getData();
-            if (!data || !data.times || data.times.length === 0) {
-                document.querySelectorAll('.skeleton').forEach(el => el.classList.remove('skeleton'));
-                return;
-            }
-            const times = data.times;
 
-            updateRecords(times);
-            updateComparison(times);
-            updateStreaks(times);
-            updatePercentiles(times);
-            renderCharts(times);
+            if (data && data.times && data.times.length > 0) {
+                const times = data.times;
+
+                updateRecords(times, Utils);
+                updateComparison(times, Utils);
+                updateStreaks(times);
+                updatePercentiles(times, Utils);
+                renderCharts(times, Utils);
+            }
 
             document.querySelectorAll('.skeleton').forEach(el => el.classList.remove('skeleton'));
         }
 
-        function updateRecords(times) {
-            // Single
+        // 1. Tenta iniciar ouvindo o evento do script.js
+        document.addEventListener('CubeMaster:Ready', iniciarEstatisticas);
+
+        // 2. Fallback de segurança: tenta iniciar após 1.5s caso o evento falhe por algum motivo
+        setTimeout(iniciarEstatisticas, 1500);
+
+
+        // ==========================================
+        // FUNÇÕES DE RENDERIZAÇÃO
+        // ==========================================
+
+        function updateRecords(times, Utils) {
             const valid = times.filter(t => t.penalty !== 'dnf').map(t => ({ ...t, eff: Utils.effectiveTime(t) }));
             if (valid.length) {
                 const best = valid.reduce((min, t) => t.eff < min.eff ? t : min, valid[0]);
@@ -341,7 +361,6 @@
                 document.getElementById('recordSingleDate').textContent = Utils.formatDate(best.date);
             }
 
-            // Ao5, Ao12, Ao100
             [5, 12, 100].forEach(n => {
                 let bestAvg = Infinity;
                 let bestDate = null;
@@ -360,12 +379,11 @@
             });
         }
 
-        function updateComparison(times) {
+        function updateComparison(times, Utils) {
             const now = new Date();
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const dayOfWeek = today.getDay(); // 0 (Sun) - 6 (Sat)
-            // Adjust to Monday start if needed, but standard getDay is fine for logic
-            const diffToMon = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // 0 for Mon
+            const dayOfWeek = today.getDay();
+            const diffToMon = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
 
             const startThisWeek = new Date(today);
             startThisWeek.setDate(today.getDate() - diffToMon);
@@ -408,8 +426,6 @@
             if (dates.length > 0) {
                 const today = new Date().toDateString();
                 const lastDate = dates[0].toDateString();
-
-                // If last solve was today or yesterday, streak is active
                 const diffDays = (new Date(today) - new Date(lastDate)) / (1000 * 60 * 60 * 24);
 
                 if (diffDays <= 1) {
@@ -427,7 +443,6 @@
                 }
             }
 
-            // Calculate Best Streak (simplified)
             let tempStreak = 1;
             let maxStreak = 1;
             for (let i = 0; i < dates.length - 1; i++) {
@@ -444,7 +459,6 @@
             document.getElementById('currentStreak').textContent = `${currentStreak} dias`;
             document.getElementById('bestStreak').textContent = `${maxStreak} dias`;
 
-            // Monthly Volume
             const now = new Date();
             const monthlyCount = times.filter(t => {
                 const d = new Date(t.date);
@@ -453,7 +467,7 @@
             document.getElementById('monthlyVolume').textContent = monthlyCount;
         }
 
-        function updatePercentiles(times) {
+        function updatePercentiles(times, Utils) {
             const valid = times.map(Utils.effectiveTime).filter(Number.isFinite).sort((a, b) => a - b);
             if (!valid.length) return;
 
@@ -465,13 +479,16 @@
             document.getElementById('p90').textContent = Utils.formatTime(getP(0.90));
         }
 
-        function renderCharts(times) {
+        function renderCharts(times, Utils) {
+            Chart.defaults.color = '#8e9bb3';
+            Chart.defaults.borderColor = 'rgba(45, 52, 73, 0.5)';
+
             // PB Progression
             const monthlyPBs = {};
             times.forEach(t => {
                 if (t.penalty === 'dnf') return;
                 const date = new Date(t.date);
-                const key = `${date.getFullYear()}-${date.getMonth()}`; // Year-Month
+                const key = `${date.getFullYear()}-${date.getMonth()}`;
                 const eff = Utils.effectiveTime(t);
                 if (!monthlyPBs[key] || eff < monthlyPBs[key]) {
                     monthlyPBs[key] = eff;
@@ -492,13 +509,15 @@
                     datasets: [{
                         label: 'PB (Single)',
                         data: pbData,
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        borderColor: '#00ffc2',
+                        backgroundColor: 'rgba(0, 255, 194, 0.05)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#00ffc2',
                         fill: true,
                         tension: 0.4
                     }]
                 },
-                options: { responsive: true, scales: { y: { reverse: true } }, plugins: { legend: { display: false } } }
+                options: { responsive: true, scales: { y: { reverse: true, grid: { color: 'rgba(45, 52, 73, 0.3)' } }, x: { grid: { display: false } } }, plugins: { legend: { display: false } } }
             });
 
             // Method Performance
@@ -516,10 +535,11 @@
                     datasets: [{
                         label: 'Média (s)',
                         data: Object.keys(methods).map(m => Utils.avg(methods[m])),
-                        backgroundColor: ['#2563eb', '#8b5cf6', '#f59e0b']
+                        backgroundColor: ['#00ffc2', '#bec2ff', '#f59e0b'],
+                        borderRadius: 4
                     }]
                 },
-                options: { responsive: true }
+                options: { responsive: true, scales: { y: { grid: { color: 'rgba(45, 52, 73, 0.3)' } }, x: { grid: { display: false } } } }
             });
 
             // Session Volume (Day of Week)
@@ -534,17 +554,19 @@
                     datasets: [{
                         label: 'Solves',
                         data: volume,
-                        borderColor: '#f59e0b',
-                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        borderColor: '#bec2ff',
+                        backgroundColor: 'rgba(190, 194, 255, 0.05)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#bec2ff',
                         fill: true,
                         tension: 0.3
                     }]
                 },
-                options: { responsive: true }
+                options: { responsive: true, scales: { y: { grid: { color: 'rgba(45, 52, 73, 0.3)' } }, x: { grid: { display: false } } } }
             });
 
             // Heatmap (Time of Day)
-            const hourRanges = ['6h-9h', '9h-12h', '12h-15h', '15h-18h', '18h-21h', '21h-0h']; // Simplified
+            const hourRanges = ['6h-9h', '9h-12h', '12h-15h', '15h-18h', '18h-21h', '21h-0h'];
             const hourData = new Array(6).fill(0).map(() => []);
 
             times.forEach(t => {
@@ -556,7 +578,7 @@
                 else if (h >= 12 && h < 15) idx = 2;
                 else if (h >= 15 && h < 18) idx = 3;
                 else if (h >= 18 && h < 21) idx = 4;
-                else if (h >= 21 || h < 6) idx = 5; // Night owls
+                else if (h >= 21 || h < 6) idx = 5;
 
                 if (idx !== -1) hourData[idx].push(Utils.effectiveTime(t));
             });
@@ -568,14 +590,14 @@
                     datasets: [{
                         label: 'Média (s)',
                         data: hourData.map(arr => Utils.avg(arr) || 0),
-                        backgroundColor: '#2563eb'
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 4
                     }]
                 },
-                options: { responsive: true }
+                options: { responsive: true, scales: { y: { grid: { color: 'rgba(45, 52, 73, 0.3)' } }, x: { grid: { display: false } } } }
             });
         }
     </script>
-    <script src="./assets/js/script.js"></script>
 </body>
 
 </html>

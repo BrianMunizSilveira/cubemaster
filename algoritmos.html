@@ -10,6 +10,13 @@
     <link rel="icon" type="image/x-icon" href="https://img.icons8.com/color/48/rubiks-cube.png">
 
     <script src="./assets/js/oll-data.js"></script>
+    <script>
+    // Verifica se o usuário já escolheu um tema manualmente
+    const savedTheme = localStorage.getItem('theme-preference');
+    if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    }
+</script>
 
     <style>
         .category-grid {
