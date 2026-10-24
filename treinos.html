@@ -3,65 +3,282 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CubeMaster - Treinos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="./assets/css/styles.css">
     <link rel="icon" type="image/x-icon" href="https://img.icons8.com/color/48/rubiks-cube.png">
     <style>
-        /* Sidebar Hidden State */
-        body.sidebar-hidden .container { grid-template-columns: 0 1fr; }
-        body.sidebar-hidden .sidebar { width: 0; padding: 0; overflow: hidden; opacity: 0; pointer-events: none; transition: all 0.3s ease; }
-        body.sidebar-hidden .main-content { width: 100%; margin-left: 0; }
-        .sidebar { transition: all 0.3s ease; }
-        
-        #sidebarToggle { transition: all 0.3s; min-width: 48px; }
-        #sidebarToggle:hover { background-color: var(--surface-hover); }
-        .header-left { display: flex; align-items: center; gap: 0.5rem; }
+        /* ==========================================
+           ESTILOS GERAIS (MOBILE-FIRST LOGIC)
+           ========================================== */
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-        .timer-section { display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 100%; margin: 0 auto; padding: 2rem 1rem; }
-        body.sidebar-hidden .timer-section { max-width: 100%; }
-        body.sidebar-hidden .scramble-display { font-size: 1.8rem; padding: 2rem; }
-        body.sidebar-hidden .timer-display { font-size: 14rem; margin: 3rem 0; }
+        #sidebarToggle {
+            transition: all 0.3s;
+            min-width: 48px;
+        }
 
-        .timer-settings { margin-bottom: 2rem; display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; }
+        #sidebarToggle:hover {
+            background-color: var(--surface-hover);
+        }
+
+        /* Seção do Timer */
+        .timer-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .timer-display {
+            font-size: 8rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 1rem 0;
+            transition: color 0.2s, text-shadow 0.2s;
+        }
+
+        .timer-display.ready {
+            color: var(--warning);
+            text-shadow: 0 0 30px rgba(245, 158, 11, 0.3);
+        }
+
+        .timer-display.running {
+            color: var(--primary-cyan);
+            text-shadow: 0 0 40px var(--primary-cyan-glow);
+        }
+
+        .scramble-display {
+            font-size: 1.4rem;
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--surface-border);
+            width: 100%;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--text-main);
+            background-color: var(--surface-card);
+        }
+
+        .timer-settings {
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
 
         /* Toggle Switch */
-        .toggle-switch { position: relative; display: inline-flex; align-items: center; cursor: pointer; gap: 0.5rem; }
-        .toggle-switch input { opacity: 0; width: 0; height: 0; }
-        .toggle-switch .slider { position: relative; width: 44px; height: 24px; background-color: var(--surface-border); border-radius: 24px; transition: .4s; }
-        .toggle-switch .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: var(--text-muted); border-radius: 50%; transition: .4s; }
-        .toggle-switch input:checked+.slider { background-color: var(--primary-cyan); }
-        .toggle-switch input:checked+.slider:before { transform: translateX(20px); background-color: var(--surface-base); }
-        .toggle-switch .label-text { font-size: 0.95rem; color: var(--text-muted); font-weight: 500; }
-
-        /* Session Info Grid */
-        .session-info { position: fixed; right: 0; top: 0; height: 100vh; width: 320px; background-color: var(--surface-card); border-left: 1px solid var(--surface-border); display: flex; flex-direction: column; overflow-y: auto; z-index: 50; transition: width 0.3s ease; }
-        body.sidebar-hidden .session-info { width: 380px; }
-        .main-content { margin-right: 320px; transition: margin-right 0.3s ease; }
-        body.sidebar-hidden .main-content { margin-right: 380px; }
-
-        .session-stats-grid { display: flex; flex-direction: column; gap: 0; padding: 1.5rem 1rem; border-bottom: 1px solid var(--surface-border); }
-        .solves-list { flex: 1; overflow-y: auto; width: 100%; position: relative; }
-        .solves-list-header { padding: 1rem; background-color: var(--surface-hover); font-weight: 600; color: var(--text-main); position: sticky; top: 0; z-index: 1; font-size: 0.9rem; }
-        
-        .solve-item { display: flex; align-items: center; justify-content: space-between; padding: 0.8rem 1rem; border-bottom: 1px solid var(--surface-border); font-size: 0.85rem; transition: background-color 0.2s; gap: 0.5rem; }
-        .solve-item .count { color: var(--text-muted); min-width: 45px; font-weight: 600; font-size: 0.85rem; }
-        .solve-item .time { font-weight: 700; font-size: 1.1rem; color: var(--primary-cyan); flex: 1; text-align: right; font-family: var(--font-display); }
-        .solve-item .actions { opacity: 0.5; transition: opacity 0.2s; cursor: pointer; padding: 0.5rem; border-radius: var(--radius-sm); }
-        .solve-item .actions:hover { opacity: 1; background-color: var(--danger-bg); color: var(--danger); }
-
-        .keyboard-hint { text-align: center; margin-top: 1rem; padding: 1rem; background-color: var(--surface-base); border-radius: var(--radius-md); font-size: 0.9rem; color: var(--text-muted); }
-        .keyboard-hint kbd { display: inline-block; padding: 0.2rem 0.5rem; background-color: var(--surface-card); border: 1px solid var(--surface-border); border-radius: var(--radius-sm); font-family: var(--font-body); font-weight: 600; color: var(--text-main); margin: 0 0.2rem; }
-
-        /* 💡 ESTADO RECOLHIDO (CTRL+H) */
-        body.sidebar-hidden .session-info {
-            width: 100px; 
+        .toggle-switch {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            gap: 0.5rem;
         }
-        
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-switch .slider {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background-color: var(--surface-border);
+            border-radius: 24px;
+            transition: .4s;
+        }
+
+        .toggle-switch .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: var(--text-muted);
+            border-radius: 50%;
+            transition: .4s;
+        }
+
+        .toggle-switch input:checked+.slider {
+            background-color: var(--primary-cyan);
+        }
+
+        .toggle-switch input:checked+.slider:before {
+            transform: translateX(20px);
+            background-color: var(--surface-base);
+        }
+
+        .toggle-switch .label-text {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        /* Painel Direito (Desktop) */
+        .session-info {
+            position: fixed;
+            right: 0;
+            top: 0;
+            height: 100vh;
+            width: 320px;
+            background-color: var(--surface-card);
+            border-left: 1px solid var(--surface-border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            z-index: 50;
+            transition: width 0.3s ease;
+        }
+
+        .main-content {
+            margin-right: 320px;
+            transition: margin-right 0.3s ease;
+        }
+
+        .session-stats-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid var(--surface-border);
+        }
+
+        .solves-list {
+            flex: 1;
+            overflow-y: auto;
+            width: 100%;
+            position: relative;
+        }
+
+        .solves-list-header {
+            padding: 1rem;
+            background-color: var(--surface-hover);
+            font-weight: 600;
+            color: var(--text-main);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            font-size: 0.9rem;
+        }
+
+        .solve-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.8rem 1rem;
+            border-bottom: 1px solid var(--surface-border);
+            font-size: 0.85rem;
+            transition: background-color 0.2s;
+            gap: 0.5rem;
+        }
+
+        .solve-item .count {
+            color: var(--text-muted);
+            min-width: 45px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .solve-item .time {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary-cyan);
+            flex: 1;
+            text-align: right;
+            font-family: var(--font-display);
+        }
+
+        .solve-item .actions {
+            opacity: 0.5;
+            transition: opacity 0.2s;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .solve-item .actions:hover {
+            opacity: 1;
+            background-color: var(--danger-bg);
+            color: var(--danger);
+        }
+
+        .keyboard-hint {
+            text-align: center;
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: var(--surface-base);
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .keyboard-hint kbd {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            background-color: var(--surface-card);
+            border: 1px solid var(--surface-border);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-body);
+            font-weight: 600;
+            color: var(--text-main);
+            margin: 0 0.2rem;
+        }
+
+        /* Estado Recolhido (CTRL+H) */
+        body.sidebar-hidden .container {
+            grid-template-columns: 0 1fr;
+        }
+
+        body.sidebar-hidden .sidebar {
+            width: 0;
+            padding: 0;
+            overflow: hidden;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        body.sidebar-hidden .session-info {
+            width: 100px;
+        }
+
         body.sidebar-hidden .main-content {
-            margin-right: 100px; 
+            margin-right: 100px;
+        }
+
+        body.sidebar-hidden .scramble-display {
+            font-size: 1.8rem;
+            padding: 2rem;
+        }
+
+        body.sidebar-hidden .timer-display {
+            font-size: 14rem;
+            margin: 3rem 0;
         }
 
         body.sidebar-hidden .small-scramble {
@@ -75,9 +292,9 @@
         }
 
         body.sidebar-hidden .solve-item .time {
-            font-size: 1.2rem; 
+            font-size: 1.2rem;
         }
-        
+
         body.sidebar-hidden .session-stats-grid {
             padding: 1rem 0.5rem;
         }
@@ -87,15 +304,309 @@
             align-items: flex-end;
         }
 
-        /* Responsive */
+
+        /* ==========================================
+           BREAKPOINTS
+           ========================================== */
+
+        /* 1. Telas Grandes (Acima de 1441px) */
+        @media (min-width: 1441px) {
+            .timer-display {
+                font-size: 12rem;
+            }
+
+            .session-info {
+                width: 380px;
+            }
+
+            .main-content {
+                margin-right: 380px;
+            }
+
+            body.sidebar-hidden .session-info {
+                width: 120px;
+            }
+
+            body.sidebar-hidden .main-content {
+                margin-right: 120px;
+            }
+        }
+
+        /* 2. Desktops e Notebooks (Até 1440px) */
+        @media (max-width: 1440px) {
+            .timer-display {
+                font-size: 10rem;
+            }
+        }
+
+        /* 3. Tablets em paisagem e iPads (Até 1024px) */
+        @media (max-width: 1024px) {
+            .timer-display {
+                font-size: 8rem;
+            }
+
+            .session-info {
+                width: 280px;
+            }
+
+            .main-content {
+                margin-right: 280px;
+            }
+
+            body.sidebar-hidden .session-info {
+                width: 90px;
+            }
+
+            body.sidebar-hidden .main-content {
+                margin-right: 90px;
+            }
+        }
+
+        /* 4. Tablets em pé (Até 768px) */
         @media (max-width: 768px) {
-            .session-info { position: fixed; width: 100%; height: auto; max-height: 40vh; top: auto; bottom: 0; right: 0; left: 0; border-left: none; border-top: 1px solid var(--surface-border); z-index: 100; }
-            body.sidebar-hidden .session-info { width: 100%; }
-            .main-content { margin-right: 0; margin-bottom: 40vh; }
-            body.sidebar-hidden .main-content { margin-right: 0; }
-            #sidebarToggle { display: none !important; }
-            body.sidebar-hidden .solve-item { flex-direction: row; align-items: center; } /* Reseta no mobile */
-            body.sidebar-hidden .stat-box { flex-direction: row; align-items: center; }
+            .container {
+                display: block;
+            }
+
+            /* Menu lateral vira off-canvas */
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100vh;
+                width: 280px;
+                z-index: 1000;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+
+            body.nav-open .sidebar {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-right: 0;
+                margin-bottom: 0;
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            .timer-section {
+                flex: 1;
+                justify-content: center;
+                padding: 1rem;
+                overflow-y: auto;
+            }
+
+            /* Painel inferior dividido (Lado a Lado) */
+            .session-info {
+                position: relative;
+                width: 100%;
+                height: 35vh;
+                border-left: none;
+                border-top: 1px solid var(--surface-border);
+                z-index: 100;
+                flex-direction: row;
+            }
+
+            .session-stats-grid {
+                width: 40%;
+                border-bottom: none;
+                border-right: 1px solid var(--surface-border);
+                padding: 1rem;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                align-content: start;
+                gap: 0.5rem;
+            }
+
+            .stat-box {
+                padding: 0.25rem;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stat-box h4 {
+                font-size: 0.7rem;
+            }
+
+            .stat-box .value {
+                font-size: 1rem;
+            }
+
+            .solves-list {
+                width: 60%;
+                flex: none;
+                height: 100%;
+            }
+
+            .timer-display {
+                font-size: 6rem;
+                margin: 0.5rem 0;
+            }
+
+            .scramble-display {
+                font-size: 1rem;
+                padding: 1rem;
+                margin-bottom: 1rem;
+            }
+
+            .timer-controls {
+                margin-bottom: 1rem;
+                gap: 0.5rem;
+            }
+
+            .btn {
+                padding: 6px 12px;
+                font-size: 0.85rem;
+            }
+
+            #sidebarToggle {
+                display: none !important;
+            }
+
+            .keyboard-hint {
+                display: none !important;
+            }
+
+            .footer {
+                display: none !important;
+            }
+
+            body.sidebar-hidden .session-info {
+                width: 100%;
+                height: 35vh;
+            }
+
+            body.sidebar-hidden .main-content {
+                margin-right: 0;
+            }
+
+            body.sidebar-hidden .solve-item {
+                flex-direction: row;
+                align-items: center;
+            }
+
+            body.sidebar-hidden .stat-box {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            body.sidebar-hidden .timer-display {
+                font-size: 6rem;
+            }
+        }
+
+        /* 5. Celulares Grandes (Até 425px - Ex: iPhone Plus/Max) */
+        @media (max-width: 425px) {
+            .timer-display {
+                font-size: 5rem;
+            }
+
+            .scramble-display {
+                font-size: 0.9rem;
+                padding: 0.8rem;
+            }
+
+            .session-info {
+                height: 40vh;
+            }
+
+            .session-stats-grid {
+                width: 45%;
+                padding: 0.8rem;
+            }
+
+            .solves-list {
+                width: 55%;
+            }
+
+            .btn {
+                padding: 5px 10px;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* 6. Celulares Médios (Até 375px - Ex: iPhone Padrão) */
+        @media (max-width: 375px) {
+            .timer-display {
+                font-size: 4.5rem;
+            }
+
+            .scramble-display {
+                font-size: 0.85rem;
+            }
+
+            .session-info {
+                height: 42vh;
+            }
+
+            .session-stats-grid {
+                width: 50%;
+                gap: 0.3rem;
+            }
+
+            .solves-list {
+                width: 50%;
+            }
+
+            .solve-item {
+                padding: 0.5rem;
+                font-size: 0.75rem;
+            }
+
+            .solve-item .time {
+                font-size: 0.95rem;
+            }
+
+            .btn {
+                padding: 4px 8px;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* 7. Celulares Pequenos (Até 320px - Ex: iPhone SE / Antigos) */
+        @media (max-width: 320px) {
+            .timer-display {
+                font-size: 3.8rem;
+            }
+
+            .scramble-display {
+                font-size: 0.8rem;
+                padding: 0.5rem;
+            }
+
+            .session-info {
+                height: 45vh;
+            }
+
+            .session-stats-grid {
+                width: 55%;
+                padding: 0.5rem;
+            }
+
+            .solves-list {
+                width: 45%;
+            }
+
+            .stat-box .value {
+                font-size: 0.9rem;
+            }
+
+            .solve-item .time {
+                font-size: 0.85rem;
+            }
+
+            .solve-item .actions {
+                padding: 2px;
+            }
+
+            .btn {
+                padding: 3px 6px;
+                font-size: 0.7rem;
+            }
         }
     </style>
 </head>
@@ -118,8 +629,9 @@
                 <li><a href="ajuda.html"><i class="fas fa-question-circle"></i> Ajuda</a></li>
             </ul>
         </aside>
+
         <main class="main-content">
-            <div class="header">
+            <div class="header" style="flex-shrink: 0; margin-bottom: 1rem;">
                 <div class="header-left">
                     <button class="btn btn--ghost menu-toggle" id="menuToggle" aria-label="Abrir menu">
                         <i class="fas fa-bars"></i>
@@ -135,7 +647,7 @@
                     <button class="btn btn--ghost" id="btnLogout" title="Sair" style="margin-left: 8px;">
                         <i class="fas fa-sign-out-alt"></i>
                     </button>
-                    <div>
+                    <div style="display: none;" class="desktop-user-text">
                         <p style="font-weight: bold;">Cubista Master</p>
                     </div>
                 </div>
@@ -153,7 +665,7 @@
                     </label>
                 </div>
 
-                <div class="timer-controls" style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; justify-content: center;">
+                <div class="timer-controls">
                     <button class="btn btn--ghost" id="btnGenScramble" title="Novo Scramble">
                         <i class="fas fa-random"></i> Novo Scramble
                     </button>
@@ -174,47 +686,50 @@
                     <kbd>Ctrl</kbd>+<kbd>H</kbd> Ocultar Menu •
                     <kbd>Esc</kbd> Novo Scramble
                 </div>
+            </div>
 
-                <div class="session-info">
-                    <div class="session-stats-grid">
-                        <div class="stat-box">
-                            <h4><i class="fas fa-layer-group"></i> Solves</h4>
-                            <div class="value" id="sessionCount">0</div>
-                        </div>
-                        <div class="stat-box">
-                            <h4><i class="fas fa-chart-line"></i> Média</h4>
-                            <div class="value" id="sessionMean">--</div>
-                        </div>
-                        <div class="stat-box">
-                            <h4><i class="fas fa-star"></i> Ao5</h4>
-                            <div class="value" id="sessionAo5">--</div>
-                        </div>
-                        <div class="stat-box">
-                            <h4><i class="fas fa-star-half-alt"></i> Ao12</h4>
-                            <div class="value" id="sessionAo12">--</div>
-                        </div>
-                        <div class="stat-box">
-                            <h4><i class="fas fa-trophy"></i> Melhor</h4>
-                            <div class="value" id="sessionBest">--</div>
-                        </div>
+            <div class="session-info">
+                <div class="session-stats-grid">
+                    <div class="stat-box">
+                        <h4><i class="fas fa-layer-group"></i> Solves</h4>
+                        <div class="value" id="sessionCount">0</div>
                     </div>
+                    <div class="stat-box">
+                        <h4><i class="fas fa-chart-line"></i> Média</h4>
+                        <div class="value" id="sessionMean">--</div>
+                    </div>
+                    <div class="stat-box">
+                        <h4><i class="fas fa-star"></i> Ao5</h4>
+                        <div class="value" id="sessionAo5">--</div>
+                    </div>
+                    <div class="stat-box">
+                        <h4><i class="fas fa-star-half-alt"></i> Ao12</h4>
+                        <div class="value" id="sessionAo12">--</div>
+                    </div>
+                    <div class="stat-box">
+                        <h4><i class="fas fa-trophy"></i> Melhor</h4>
+                        <div class="value" id="sessionBest">--</div>
+                    </div>
+                </div>
 
-                    <div class="solves-list">
-                        <div class="solves-list-header">
-                            <i class="fas fa-history"></i> Tempos Recentes
-                        </div>
-                        <div id="solvesList">
-                            <div style="padding: 2rem 1rem; text-align: center; color: var(--text-muted);">
-                                <i class="fas fa-stopwatch" style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5;"></i>
-                                <p>Nenhum tempo registrado</p>
-                                <p style="font-size: 0.85rem; margin-top: 0.5rem;">Pressione <kbd>Espaço</kbd> para começar</p>
-                            </div>
+                <div class="solves-list">
+                    <div class="solves-list-header">
+                        <i class="fas fa-history"></i> Tempos Recentes
+                    </div>
+                    <div id="solvesList">
+                        <div style="padding: 2rem 1rem; text-align: center; color: var(--text-muted);">
+                            <i class="fas fa-stopwatch"
+                                style="font-size: 2rem; margin-bottom: 0.5rem; opacity: 0.5;"></i>
+                            <p>Nenhum tempo registrado</p>
+                            <p style="font-size: 0.85rem; margin-top: 0.5rem;">Pressione <kbd>Espaço</kbd> para começar
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="footer" style="text-align: center; padding: 2rem 0; color: var(--text-muted); font-size: 0.85rem;">
+            <div class="footer"
+                style="text-align: center; padding: 2rem 0; color: var(--text-muted); font-size: 0.85rem;">
                 <p>CubeMaster © 2025 - Cronômetro de Treino</p>
                 <p>Mantenha o foco e a consistência em suas sessões</p>
             </div>
