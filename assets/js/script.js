@@ -5,6 +5,8 @@ const supabase = createClient(
     'sb_publishable_cieUk7Cu_zRUg_NBffSYaA_HYQzy4cf'
 );
 
+window.supabase = supabase;
+
 const CONFIG = {
     STORAGE_KEY: 'times-data',
     DEFAULT_CUBE: '3x3',

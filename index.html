@@ -9,13 +9,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="./assets/css/styles.css">
     <link rel="icon" type="image/x-icon" href="https://img.icons8.com/color/48/rubiks-cube.png">
-    <script>
-        // Verifica se o usuário já escolheu um tema manualmente
-        const savedTheme = localStorage.getItem('theme-preference');
-        if (savedTheme) {
-            document.documentElement.setAttribute('data-theme', savedTheme);
-        }
-    </script>
 </head>
 
 <body>
@@ -43,9 +36,9 @@
                         class="fas fa-bars"></i></button>
                 <h2>Painel de Aprimoramento</h2>
                 <div class="user-info">
-                    <div class="user-avatar">BMS</div>
+                    <div class="user-avatar" id="dashboardAvatar">--</div>
                     <div>
-                        <p style="font-weight: 600; font-size: 0.9rem;">2024SILV15</p>
+                        <p style="font-weight: 600; font-size: 0.9rem;" id="dashboardWcaId">Carregando...</p>
                     </div>
                 </div>
             </div>
@@ -126,8 +119,8 @@
                         <div class="stat-card" style="padding: 1rem; border-left-color: var(--secondary-violet);">
                             <div class="stat-info">
                                 <div class="metric-label">Nível Estimado</div>
-                                <div class="metric-value" id="metricLevel" style="color: var(--secondary-violet);">
-                                    Calculando...</div>
+                                <div class="metric-value" id="metricLevel" style="color: var(--secondary-violet);">--
+                                </div>
                                 <div class="metric-sub" id="metricLevelDesc">Baseado no Ao100</div>
                             </div>
                         </div>
@@ -148,7 +141,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="section">
                     <div class="section__header"
                         style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
@@ -157,24 +149,24 @@
                     </div>
                     <div>
                         <div style="margin-bottom: 1.5rem;">
-                            <div class="goal-header">
-                                <span>Volume Semanal (100 solves)</span>
-                                <span id="goalVolumeText"
-                                    style="color: var(--primary-cyan); font-weight: bold;">0/100</span>
-                            </div>
-                            <div class="progress-bar">
+                            <div class="goal-header"
+                                style="display: flex; justify-content: space-between; margin-bottom: 8px;"><span>Volume
+                                    Semanal (100 solves)</span><span id="goalVolumeText"
+                                    style="color: var(--primary-cyan); font-weight: bold;">0/100</span></div>
+                            <div class="progress-bar"
+                                style="background: var(--surface-border); height: 8px; border-radius: 4px; overflow: hidden;">
                                 <div class="progress-fill" id="goalVolumeBar"
                                     style="width: 0%; background: var(--primary-cyan); box-shadow: 0 0 10px var(--primary-cyan-glow);">
                                 </div>
                             </div>
                         </div>
                         <div>
-                            <div class="goal-header">
-                                <span>Sub-20s (10 solves)</span>
-                                <span id="goalSub20Text"
-                                    style="color: var(--secondary-violet); font-weight: bold;">0/10</span>
-                            </div>
-                            <div class="progress-bar">
+                            <div class="goal-header"
+                                style="display: flex; justify-content: space-between; margin-bottom: 8px;"><span>Sub-20s
+                                    (10 solves)</span><span id="goalSub20Text"
+                                    style="color: var(--secondary-violet); font-weight: bold;">0/10</span></div>
+                            <div class="progress-bar"
+                                style="background: var(--surface-border); height: 8px; border-radius: 4px; overflow: hidden;">
                                 <div class="progress-fill" id="goalSub20Bar"
                                     style="width: 0%; background: var(--secondary-violet); box-shadow: 0 0 10px rgba(139, 92, 246, 0.3);">
                                 </div>
@@ -184,24 +176,20 @@
                 </div>
             </div>
 
-            <!-- Charts -->
             <div class="charts-container"
                 style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
                 <div class="chart-card">
                     <h3 style="color: var(--text-main); font-size: 1rem;"><i class="fas fa-chart-bar"></i> Distribuição
-                        de Tempos</h3>
-                    <canvas id="timeDistributionChart"></canvas>
+                        de Tempos</h3><canvas id="timeDistributionChart"></canvas>
                 </div>
                 <div class="chart-card">
                     <h3 style="color: var(--text-main); font-size: 1rem;"><i class="fas fa-clock"></i> Desempenho por
-                        Horário</h3>
-                    <canvas id="timeOfDayChart"></canvas>
+                        Horário</h3><canvas id="timeOfDayChart"></canvas>
                 </div>
             </div>
             <div class="chart-card" style="margin-bottom: 2rem;">
                 <h3 style="color: var(--text-main); font-size: 1rem;"><i class="fas fa-chart-line"></i> Evolução dos
-                    Tempos</h3>
-                <canvas id="timeEvolutionChart"></canvas>
+                    Tempos</h3><canvas id="timeEvolutionChart"></canvas>
             </div>
 
             <div class="footer"
@@ -212,6 +200,46 @@
     </div>
 
     <script type="module" src="./assets/js/script.js"></script>
+
+    <!-- Lógica robusta para carregar Perfil -->
+    <script>
+        function aguardarSistema() {
+            const check = setInterval(async () => {
+                if (window.supabase) {
+                    clearInterval(check);
+
+                    try {
+                        const { data: { session } } = await window.supabase.auth.getSession();
+                        if (session) {
+                            const email = session.user.email;
+
+                            // 1. Avatar
+                            document.getElementById('dashboardAvatar').textContent = email.charAt(0).toUpperCase();
+
+                            // 2. WCA ID
+                            const { data: profile } = await window.supabase
+                                .from('profiles')
+                                .select('wca_id')
+                                .eq('id', session.user.id)
+                                .single();
+
+                            const wcaElement = document.getElementById('dashboardWcaId');
+                            if (profile && profile.wca_id) {
+                                wcaElement.textContent = profile.wca_id;
+                            } else {
+                                // Se não existir a linha na tabela ou a coluna, usa o padrão
+                                wcaElement.textContent = 'Sem WCA ID';
+                                wcaElement.style.color = 'var(--text-muted)';
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Erro ao carregar dados do usuário:", e);
+                    }
+                }
+            }, 100);
+        }
+        aguardarSistema();
+    </script>
 </body>
 
 </html>
